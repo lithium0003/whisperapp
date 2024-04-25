@@ -16,7 +16,7 @@
 		BE893BFA2BDA67C500AC9CB8 /* LibWhisper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BF72BDA67C500AC9CB8 /* LibWhisper.swift */; };
 		BE893BFB2BDA67C500AC9CB8 /* Recoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BF82BDA67C500AC9CB8 /* Recoder.swift */; };
 		BE893BFC2BDA67C500AC9CB8 /* WhisperState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BF92BDA67C500AC9CB8 /* WhisperState.swift */; };
-		BE893C1A2BDA6A9500AC9CB8 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE893C192BDA6A9500AC9CB8 /* whisper */; };
+		BE893C1D2BDA803A00AC9CB8 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE893C1C2BDA803A00AC9CB8 /* whisper */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,7 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE893C1A2BDA6A9500AC9CB8 /* whisper in Frameworks */,
+				BE893C1D2BDA803A00AC9CB8 /* whisper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,7 +113,7 @@
 			);
 			name = whisperapp;
 			packageProductDependencies = (
-				BE893C192BDA6A9500AC9CB8 /* whisper */,
+				BE893C1C2BDA803A00AC9CB8 /* whisper */,
 			);
 			productName = whisperapp;
 			productReference = BE893BD82BDA65A500AC9CB8 /* whisperapp.app */;
@@ -416,7 +416,7 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BE893C192BDA6A9500AC9CB8 /* whisper */ = {
+		BE893C1C2BDA803A00AC9CB8 /* whisper */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = whisper;
 		};
