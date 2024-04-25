@@ -17,6 +17,8 @@
 		BE893BFB2BDA67C500AC9CB8 /* Recoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BF82BDA67C500AC9CB8 /* Recoder.swift */; };
 		BE893BFC2BDA67C500AC9CB8 /* WhisperState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BF92BDA67C500AC9CB8 /* WhisperState.swift */; };
 		BE893C1D2BDA803A00AC9CB8 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE893C1C2BDA803A00AC9CB8 /* whisper */; };
+		BE893C212BDAA3DE00AC9CB8 /* TextFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893C202BDAA3DE00AC9CB8 /* TextFile.swift */; };
+		BE893C232BDAB6BB00AC9CB8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BE893C222BDAB6BB00AC9CB8 /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 		BE893BF82BDA67C500AC9CB8 /* Recoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Recoder.swift; path = whisperapp/Recoder.swift; sourceTree = SOURCE_ROOT; };
 		BE893BF92BDA67C500AC9CB8 /* WhisperState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WhisperState.swift; path = whisperapp/WhisperState.swift; sourceTree = SOURCE_ROOT; };
 		BE893C1B2BDA6B4B00AC9CB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		BE893C202BDAA3DE00AC9CB8 /* TextFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFile.swift; sourceTree = "<group>"; };
+		BE893C222BDAB6BB00AC9CB8 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,13 +71,13 @@
 			children = (
 				BE893C1B2BDA6B4B00AC9CB8 /* Info.plist */,
 				BE893BF62BDA675200AC9CB8 /* Library */,
-				BE893BEC2BDA66AA00AC9CB8 /* ModelSelecter.swift */,
-				BE893BEA2BDA668600AC9CB8 /* Downloader.swift */,
+				BE893C1E2BDAA39200AC9CB8 /* Download */,
+				BE893C1F2BDAA3A400AC9CB8 /* Main */,
 				BE893BDB2BDA65A500AC9CB8 /* whisperappApp.swift */,
-				BE893BDD2BDA65A500AC9CB8 /* ContentView.swift */,
 				BE893BDF2BDA65A600AC9CB8 /* Assets.xcassets */,
 				BE893BE12BDA65A600AC9CB8 /* whisperapp.entitlements */,
 				BE893BE22BDA65A600AC9CB8 /* Preview Content */,
+				BE893C222BDAB6BB00AC9CB8 /* Localizable.xcstrings */,
 			);
 			path = whisperapp;
 			sourceTree = "<group>";
@@ -94,6 +98,24 @@
 				BE893BF92BDA67C500AC9CB8 /* WhisperState.swift */,
 			);
 			path = Library;
+			sourceTree = "<group>";
+		};
+		BE893C1E2BDAA39200AC9CB8 /* Download */ = {
+			isa = PBXGroup;
+			children = (
+				BE893BEC2BDA66AA00AC9CB8 /* ModelSelecter.swift */,
+				BE893BEA2BDA668600AC9CB8 /* Downloader.swift */,
+			);
+			path = Download;
+			sourceTree = "<group>";
+		};
+		BE893C1F2BDAA3A400AC9CB8 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				BE893BDD2BDA65A500AC9CB8 /* ContentView.swift */,
+				BE893C202BDAA3DE00AC9CB8 /* TextFile.swift */,
+			);
+			path = Main;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -141,6 +163,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ja,
 			);
 			mainGroup = BE893BCF2BDA65A500AC9CB8;
 			packageReferences = (
@@ -162,6 +185,7 @@
 			files = (
 				BE893BE42BDA65A600AC9CB8 /* Preview Assets.xcassets in Resources */,
 				BE893BE02BDA65A600AC9CB8 /* Assets.xcassets in Resources */,
+				BE893C232BDAB6BB00AC9CB8 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -178,6 +202,7 @@
 				BE893BFA2BDA67C500AC9CB8 /* LibWhisper.swift in Sources */,
 				BE893BFC2BDA67C500AC9CB8 /* WhisperState.swift in Sources */,
 				BE893BED2BDA66AA00AC9CB8 /* ModelSelecter.swift in Sources */,
+				BE893C212BDAA3DE00AC9CB8 /* TextFile.swift in Sources */,
 				BE893BEB2BDA668600AC9CB8 /* Downloader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -306,7 +331,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -349,7 +374,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
 				ENABLE_HARDENED_RUNTIME = YES;

@@ -7,10 +7,23 @@
 
 import SwiftUI
 
+struct TextData: Transferable {
+    static var transferRepresentation: some TransferRepresentation {
+        ProxyRepresentation(exporting: \.text)
+    }
+
+    public var text: String
+    public var caption: String
+}
+
 struct ContentView: View {
     @StateObject var whisperState: WhisperState
     @State var threshold = 0.5
     @State var showConfig = false
+    @State var showEdit = false
+    @State var resultText = ""
+    @State var exporterPresented = false
+
     @AppStorage("bufferSec") var bufferSec = 10
     @AppStorage("contCount") var contCount = 4
     @AppStorage("silentLevel") var silentLeveldB = -45.0
@@ -106,7 +119,7 @@ struct ContentView: View {
                     if waitTime > 0 {
                         Text("\(waitTime, format: .number.precision(.fractionLength(2))) sec wait")
                     }
-                    Text(detectLanguage)
+                    Text(String(localized: String.LocalizationValue(detectLanguage)))
                 }
                 .foregroundStyle(callCount == 0 ? .primary: Color.orange)
             }
@@ -122,6 +135,9 @@ struct ContentView: View {
                 }
                 .onChange(of: whisperState.messageLog.count) { oldValue, newValue in
                     reader.scrollTo(-1)
+                }
+                .onLongPressGesture {
+                    showEdit = true
                 }
             }
             if whisperState.isModelLoaded {
@@ -195,6 +211,16 @@ struct ContentView: View {
             whisperState.fixLanguage = language
             whisperState.languageCutoff = languageCutoff
         }
+        .onChange(of: whisperState.isModelLoaded) { oldValue, newValue in
+            if newValue {
+                Task.detached { @MainActor in
+                    whisperState.messageLog = [
+                        String(localized: "Ready to start."),
+                        String(localized: "LogPress to export log."),
+                    ]
+                }
+            }
+        }
         .onChange(of: scenePhase) { oldValue, newValue in
             if newValue == .background, whisperState.isRecording {
                 Task {
@@ -209,6 +235,40 @@ struct ContentView: View {
             waitTime = whisperState.waitTime
             callCount = whisperState.callCount
             detectLanguage = whisperState.language
+        }
+        .fullScreenCover(isPresented: $showEdit) {
+            VStack {
+                HStack {
+                    ShareLink(item: resultText)
+                    Spacer()
+                    Button {
+                        exporterPresented = true
+                    } label: {
+                        Image(systemName: "doc")
+                    }
+                    Spacer()
+                    Button("Done") {
+                        showEdit = false
+                    }
+                }
+                .padding()
+                TextEditor(text: $resultText)
+            }
+            .onAppear {
+                resultText = whisperState.messageLog.joined(separator: "\n")
+            }
+            .fileExporter(isPresented: $exporterPresented,
+                          document: TextFile(initialText: resultText),
+                          contentType: .plainText,
+                          defaultFilename: "Untitled.txt",
+                          onCompletion: { result in
+                switch result {
+                case .success(let url):
+                    print("success to save \(url)")
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            })
         }
         .sheet(isPresented: $showConfig, onDismiss: {
             whisperState.bufferSec = bufferSec
@@ -244,7 +304,7 @@ struct ContentView: View {
                     Text("Set language")
                     Picker("Set language", selection: $language) {
                         ForEach(whisperState.languageList, id: \.self) { lang in
-                            Text(lang).tag(lang)
+                            Text(String(localized: String.LocalizationValue(lang))).tag(lang)
                         }
                     }
                 }

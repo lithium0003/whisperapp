@@ -8,7 +8,20 @@
 import SwiftUI
 import AVFoundation
 
+func DetectCPU() -> String {
+    var size = 0
+    sysctlbyname("hw.machine", nil, &size, nil, 0)
+
+    var machine = [CChar](repeating: 0, count: Int(size))
+    sysctlbyname("hw.machine", &machine, &size, nil, 0)
+
+    let modelIdentifier = String(cString:machine)
+    
+    return modelIdentifier
+}
+
 struct ModelSelecter: View {
+    private let cpu = DetectCPU()
     @StateObject var downloader = Downloader()
     @State private var isShowing = false
     @AppStorage("model_size") var model_size = "base"
@@ -62,6 +75,19 @@ struct ModelSelecter: View {
                         Text(downloader.message)
                             .font(.subheadline.monospacedDigit())
                         ProgressView(value: downloader.progress)
+                    }
+                }
+                Section {
+                    HStack {
+                        Text("CPU")
+                        Spacer()
+                        Text(cpu)
+                    }
+                    if cpu == "arm64" || (cpu.starts(with: "iPhone") && Int(cpu.replacingOccurrences(of: "iPhone", with: "").split(separator: ",").first ?? "0") ?? 0 >= 16) || (cpu.starts(with: "iPad14") && Int(cpu.replacingOccurrences(of: "iPad", with: "").split(separator: ",").last ?? "0") ?? 0 > 2) || (cpu.starts(with: "iPad") && Int(cpu.replacingOccurrences(of: "iPad", with: "").split(separator: ",").first ?? "0") ?? 0 >= 15) {
+                        Text("This device maybe ready for large-v3 model")
+                    }
+                    else {
+                        Text("This device maybe NOT raady for large-v3 model")
                     }
                 }
             }
