@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,6 +11,12 @@
 		BE893BDE2BDA65A500AC9CB8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BDD2BDA65A500AC9CB8 /* ContentView.swift */; };
 		BE893BE02BDA65A600AC9CB8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BE893BDF2BDA65A600AC9CB8 /* Assets.xcassets */; };
 		BE893BE42BDA65A600AC9CB8 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BE893BE32BDA65A600AC9CB8 /* Preview Assets.xcassets */; };
+		BE893BEB2BDA668600AC9CB8 /* Downloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BEA2BDA668600AC9CB8 /* Downloader.swift */; };
+		BE893BED2BDA66AA00AC9CB8 /* ModelSelecter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BEC2BDA66AA00AC9CB8 /* ModelSelecter.swift */; };
+		BE893BFA2BDA67C500AC9CB8 /* LibWhisper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BF72BDA67C500AC9CB8 /* LibWhisper.swift */; };
+		BE893BFB2BDA67C500AC9CB8 /* Recoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BF82BDA67C500AC9CB8 /* Recoder.swift */; };
+		BE893BFC2BDA67C500AC9CB8 /* WhisperState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BF92BDA67C500AC9CB8 /* WhisperState.swift */; };
+		BE893C1A2BDA6A9500AC9CB8 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE893C192BDA6A9500AC9CB8 /* whisper */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +26,12 @@
 		BE893BDF2BDA65A600AC9CB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BE893BE12BDA65A600AC9CB8 /* whisperapp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = whisperapp.entitlements; sourceTree = "<group>"; };
 		BE893BE32BDA65A600AC9CB8 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		BE893BEA2BDA668600AC9CB8 /* Downloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Downloader.swift; sourceTree = "<group>"; };
+		BE893BEC2BDA66AA00AC9CB8 /* ModelSelecter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelSelecter.swift; sourceTree = "<group>"; };
+		BE893BF72BDA67C500AC9CB8 /* LibWhisper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LibWhisper.swift; path = whisperapp/LibWhisper.swift; sourceTree = SOURCE_ROOT; };
+		BE893BF82BDA67C500AC9CB8 /* Recoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Recoder.swift; path = whisperapp/Recoder.swift; sourceTree = SOURCE_ROOT; };
+		BE893BF92BDA67C500AC9CB8 /* WhisperState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WhisperState.swift; path = whisperapp/WhisperState.swift; sourceTree = SOURCE_ROOT; };
+		BE893C1B2BDA6B4B00AC9CB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -27,6 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BE893C1A2BDA6A9500AC9CB8 /* whisper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,6 +65,10 @@
 		BE893BDA2BDA65A500AC9CB8 /* whisperapp */ = {
 			isa = PBXGroup;
 			children = (
+				BE893C1B2BDA6B4B00AC9CB8 /* Info.plist */,
+				BE893BF62BDA675200AC9CB8 /* Library */,
+				BE893BEC2BDA66AA00AC9CB8 /* ModelSelecter.swift */,
+				BE893BEA2BDA668600AC9CB8 /* Downloader.swift */,
 				BE893BDB2BDA65A500AC9CB8 /* whisperappApp.swift */,
 				BE893BDD2BDA65A500AC9CB8 /* ContentView.swift */,
 				BE893BDF2BDA65A600AC9CB8 /* Assets.xcassets */,
@@ -67,6 +84,16 @@
 				BE893BE32BDA65A600AC9CB8 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		BE893BF62BDA675200AC9CB8 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				BE893BF72BDA67C500AC9CB8 /* LibWhisper.swift */,
+				BE893BF82BDA67C500AC9CB8 /* Recoder.swift */,
+				BE893BF92BDA67C500AC9CB8 /* WhisperState.swift */,
+			);
+			path = Library;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -85,6 +112,9 @@
 			dependencies = (
 			);
 			name = whisperapp;
+			packageProductDependencies = (
+				BE893C192BDA6A9500AC9CB8 /* whisper */,
+			);
 			productName = whisperapp;
 			productReference = BE893BD82BDA65A500AC9CB8 /* whisperapp.app */;
 			productType = "com.apple.product-type.application";
@@ -113,6 +143,9 @@
 				Base,
 			);
 			mainGroup = BE893BCF2BDA65A500AC9CB8;
+			packageReferences = (
+				BE893C182BDA6A9500AC9CB8 /* XCLocalSwiftPackageReference "whisper" */,
+			);
 			productRefGroup = BE893BD92BDA65A500AC9CB8 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -139,8 +172,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BE893BFB2BDA67C500AC9CB8 /* Recoder.swift in Sources */,
 				BE893BDE2BDA65A500AC9CB8 /* ContentView.swift in Sources */,
 				BE893BDC2BDA65A500AC9CB8 /* whisperappApp.swift in Sources */,
+				BE893BFA2BDA67C500AC9CB8 /* LibWhisper.swift in Sources */,
+				BE893BFC2BDA67C500AC9CB8 /* WhisperState.swift in Sources */,
+				BE893BED2BDA66AA00AC9CB8 /* ModelSelecter.swift in Sources */,
+				BE893BEB2BDA668600AC9CB8 /* Downloader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,6 +312,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = whisperapp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Whisper app";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses microphone to transcribe";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -292,7 +334,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = info.lithium03.whisperapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -312,6 +355,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = whisperapp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Whisper app";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses microphone to transcribe";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -330,7 +377,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = info.lithium03.whisperapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -359,6 +407,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		BE893C182BDA6A9500AC9CB8 /* XCLocalSwiftPackageReference "whisper" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = whisper;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BE893C192BDA6A9500AC9CB8 /* whisper */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = whisper;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BE893BD02BDA65A500AC9CB8 /* Project object */;
 }
