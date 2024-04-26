@@ -5,6 +5,10 @@ This repo is iOS/macOS app "Whisper transcribe app" source code.
 <img src="https://github.com/lithium0003/whisperapp/assets/4783887/92dd5c76-b608-4473-8710-2571d729825d" width="200">
 <img src="https://github.com/lithium0003/whisperapp/assets/4783887/f60593e9-442e-49c2-8f1f-e884528b3b39" width="200">
 
+## Application demo
+large-v3 model running on iPhone15 Pro 
+https://youtu.be/sOuw789yj1k
+
 # Description
 This app transcribe multi language speech with OpenAI Whisper model.
 All process is on device, no data leaks outside.
