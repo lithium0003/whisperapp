@@ -1,12 +1,52 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "(in silence)" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(無音状態)"
+          }
+        }
+      }
+    },
     "(q8_0, trim)" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ""
+          }
+        }
+      }
+    },
+    "[converting...]" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[変換中...]"
+          }
+        }
+      }
+    },
+    "[listening...]" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[聞き取り中...]"
+          }
+        }
+      }
+    },
+    "[waiting to speak...]" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[話しかけてください...]"
           }
         }
       }
@@ -342,6 +382,16 @@
         }
       }
     },
+    "Detection active" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検出有効"
+          }
+        }
+      }
+    },
     "Done" : {
       "localizations" : {
         "ja" : {
@@ -391,6 +441,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "エストニア語"
+          }
+        }
+      }
+    },
+    "Failed to get permission for microphone to recode voice." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声を録音するために、マイクの使用許可が取得できませんでした。"
           }
         }
       }
@@ -821,6 +881,26 @@
         }
       }
     },
+    "Microphone permission error" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マイク使用許可エラー"
+          }
+        }
+      }
+    },
+    "Model is loading. Please wait" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込み中。お待ちください"
+          }
+        }
+      }
+    },
     "mongolian" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1033,6 +1113,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無音分割"
+          }
+        }
+      }
+    },
+    "Silence threshold" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無音しきい値"
           }
         }
       }

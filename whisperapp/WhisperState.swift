@@ -417,7 +417,7 @@ class WhisperState: NSObject, ObservableObject {
     }
     var processer: Processer?
     
-    func toggleRecord() async {
+    func toggleRecord() async -> Bool {
         if isRecording {
             await recorder.stopRecording()
             active = false
@@ -431,11 +431,11 @@ class WhisperState: NSObject, ObservableObject {
             case .undetermined:
                 print("undetermined")
                 if await !AVAudioApplication.requestRecordPermission() {
-                    return
+                    return false
                 }
             case .denied:
                 print("denied")
-                return
+                return false
             case .granted:
                 print("granted")
                 break
@@ -461,6 +461,7 @@ class WhisperState: NSObject, ObservableObject {
                 }
             }
         }
+        return true
     }
 }
  

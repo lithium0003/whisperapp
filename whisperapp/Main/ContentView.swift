@@ -16,6 +16,26 @@ struct TextData: Transferable {
     public var caption: String
 }
 
+struct BoundsPreferenceKey: PreferenceKey {
+    static var defaultValue: [Anchor<CGRect>] = [] // << use something persistent
+
+    static func reduce(value: inout [Anchor<CGRect>], nextValue: () -> [Anchor<CGRect>]) {
+        value.append(contentsOf:nextValue())
+    }
+}
+
+extension View {
+    func reverseMask<Content: View>(alignment: Alignment = .center, _ content: () -> Content) -> some View {
+        self.mask {
+            Rectangle()
+                .overlay(alignment: alignment) {
+                    content()
+                        .blendMode(.destinationOut)
+                }
+        }
+    }
+}
+
 struct ContentView: View {
     @StateObject var whisperState: WhisperState
     @State var threshold = 0.5
@@ -23,12 +43,14 @@ struct ContentView: View {
     @State var showEdit = false
     @State var resultText = ""
     @State var exporterPresented = false
-
+    @State var showingAlert = false
+    
     @AppStorage("bufferSec") var bufferSec = 10
     @AppStorage("contCount") var contCount = 4
     @AppStorage("silentLevel") var silentLeveldB = -45.0
     @AppStorage("language") var language = "auto"
     @AppStorage("languageCutoff") var languageCutoff = 0.0
+    @AppStorage("tutorial") var tutorial = 0
 
     let timer = Timer.publish(every: 0.2, on: .current, in: .common).autoconnect()
     @State var volLeveldB = -80.0
@@ -36,7 +58,9 @@ struct ContentView: View {
     @State var waitTime = 0.0
     @State var callCount = 0
     @State var detectLanguage = ""
-    @State var lastScroll = false
+    @State var stateLog = ""
+    @State var spotlighting = false
+    @State var counter = 0
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -56,6 +80,13 @@ struct ContentView: View {
                     Text("\(volume, format: .number.precision(.fractionLength(1)))dB")
                         .font(.subheadline.monospacedDigit())
                         .padding(5)
+                    if active {
+                        Text("Detection active")
+                            .foregroundStyle(Color.red)
+                    }
+                    else {
+                        Text("(in silence)")
+                    }
                     Spacer()
                 }
                 Rectangle()
@@ -84,16 +115,22 @@ struct ContentView: View {
         }
 
         var body: some View {
-            ZStack {
-                Rectangle()
-                    .foregroundStyle(Color.clear)
-                    .frame(height: 5)
-                    .background(LeftPart(pct: CGFloat(volume + 80)/80).fill(.green))
+            VStack(spacing: 0) {
+                ZStack {
+                    Rectangle()
+                        .foregroundStyle(Color.clear)
+                        .frame(height: 5)
+                        .background(LeftPart(pct: CGFloat(volume + 80)/80).fill(.green))
+                    HStack {
+                        Spacer()
+                        Text("\(volume, format: .number.precision(.fractionLength(1)))dB")
+                            .font(.subheadline.monospacedDigit())
+                            .padding(.horizontal, 5)
+                    }
+                }
                 HStack {
                     Spacer()
-                    Text("\(volume, format: .number.precision(.fractionLength(1)))dB")
-                        .font(.subheadline.monospacedDigit())
-                        .padding(5)
+                    Text("Silence threshold")
                 }
             }
         }
@@ -129,15 +166,16 @@ struct ContentView: View {
                         ForEach(0..<whisperState.messageLog.count, id: \.self) { i in
                             Text(verbatim: whisperState.messageLog[i])
                                 .frame(maxWidth: .infinity, alignment: .leading).id(i)
+                                .onTapGesture{}
+                                .onLongPressGesture(minimumDuration: 0.5) {
+                                    showEdit = true
+                                }
                         }
-                        Text(verbatim: "\n").frame(maxWidth: .infinity, alignment: .leading).id(-1)
+                        Text(stateLog).frame(maxWidth: .infinity, alignment: .leading).id(-1)
                     }
                 }
                 .onChange(of: whisperState.messageLog.count) { oldValue, newValue in
                     reader.scrollTo(-1)
-                }
-                .onLongPressGesture {
-                    showEdit = true
                 }
             }
             if whisperState.isModelLoaded {
@@ -175,7 +213,8 @@ struct ContentView: View {
                     }
                     Button(action: {
                         Task {
-                            await whisperState.toggleRecord()
+                            let success = await whisperState.toggleRecord()
+                            showingAlert = !success
                         }
                     }, label: {
                         if whisperState.isRecording {
@@ -188,6 +227,10 @@ struct ContentView: View {
                                 .tint(.red)
                         }
                     })
+                    .anchorPreference(
+                        key: BoundsPreferenceKey.self,
+                        value: .bounds
+                    ) { spotlighting ? [$0] : [] }
                 }
             }
             else {
@@ -198,11 +241,29 @@ struct ContentView: View {
                         Image(systemName: "gear")
                             .font(.largeTitle)
                     })
+                    Text("Model is loading. Please wait")
+                    ForEach(0..<counter%5, id: \.self) { _ in
+                        Text(verbatim: ".")
+                    }
                     Spacer()
                 }
             }
         }
         .padding()
+        .overlayPreferenceValue(BoundsPreferenceKey.self) { value in
+            GeometryReader { proxy in
+                if let preference = value.first {
+                    let rect = proxy[preference]
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .reverseMask(alignment: .topLeading) {
+                            Circle()
+                                .frame(width: rect.width + 100, height: rect.height + 100)
+                                .offset(x: rect.minX - 50, y: rect.minY - 50)
+                        }
+                }
+            }
+        }
         .onAppear {
             threshold = (silentLeveldB + 70) / 70
             whisperState.bufferSec = bufferSec
@@ -218,6 +279,10 @@ struct ContentView: View {
                         String(localized: "Ready to start."),
                         String(localized: "LogPress to export log."),
                     ]
+                    if tutorial == 0 {
+                        spotlighting = true
+                        tutorial += 1
+                    }
                 }
             }
         }
@@ -229,12 +294,32 @@ struct ContentView: View {
             }
         }
         .onReceive(timer) { t in
+            counter += 1
+            if spotlighting {
+                withAnimation(.easeInOut.delay(1)) {
+                    spotlighting = false
+                }
+            }
             volLeveldB = Double(whisperState.volLeveldB)
             silentLeveldB = Double(whisperState.silentLeveldB)
             active = whisperState.active
             waitTime = whisperState.waitTime
             callCount = whisperState.callCount
             detectLanguage = whisperState.language
+            if whisperState.isRecording {
+                if active {
+                    stateLog = String(localized: "[listening...]")
+                }
+                else if callCount > 0 {
+                    stateLog = String(localized: "[converting...]")
+                }
+                else {
+                    stateLog = String(localized: "[waiting to speak...]")
+                }
+            }
+            else {
+                stateLog = ""
+            }
         }
         .fullScreenCover(isPresented: $showEdit) {
             VStack {
@@ -324,6 +409,10 @@ struct ContentView: View {
                 Spacer()
             }
             .padding()
+        }
+        .alert(isPresented: $showingAlert) {
+            Alert(title: Text("Microphone permission error"),
+                  message: Text("Failed to get permission for microphone to recode voice."))
         }
     }
 }

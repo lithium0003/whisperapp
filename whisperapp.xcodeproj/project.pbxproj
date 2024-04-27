@@ -19,6 +19,7 @@
 		BE893C1D2BDA803A00AC9CB8 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE893C1C2BDA803A00AC9CB8 /* whisper */; };
 		BE893C212BDAA3DE00AC9CB8 /* TextFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893C202BDAA3DE00AC9CB8 /* TextFile.swift */; };
 		BE893C232BDAB6BB00AC9CB8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BE893C222BDAB6BB00AC9CB8 /* Localizable.xcstrings */; };
+		BE893C2B2BDB2B9000AC9CB8 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BE893C2A2BDB2B9000AC9CB8 /* InfoPlist.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,9 +34,10 @@
 		BE893BF72BDA67C500AC9CB8 /* LibWhisper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LibWhisper.swift; path = whisperapp/LibWhisper.swift; sourceTree = SOURCE_ROOT; };
 		BE893BF82BDA67C500AC9CB8 /* Recoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Recoder.swift; path = whisperapp/Recoder.swift; sourceTree = SOURCE_ROOT; };
 		BE893BF92BDA67C500AC9CB8 /* WhisperState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WhisperState.swift; path = whisperapp/WhisperState.swift; sourceTree = SOURCE_ROOT; };
-		BE893C1B2BDA6B4B00AC9CB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		BE893C202BDAA3DE00AC9CB8 /* TextFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFile.swift; sourceTree = "<group>"; };
 		BE893C222BDAB6BB00AC9CB8 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		BE893C2A2BDB2B9000AC9CB8 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		BE893C2E2BDB2C9B00AC9CB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,7 +71,7 @@
 		BE893BDA2BDA65A500AC9CB8 /* whisperapp */ = {
 			isa = PBXGroup;
 			children = (
-				BE893C1B2BDA6B4B00AC9CB8 /* Info.plist */,
+				BE893C2E2BDB2C9B00AC9CB8 /* Info.plist */,
 				BE893BF62BDA675200AC9CB8 /* Library */,
 				BE893C1E2BDAA39200AC9CB8 /* Download */,
 				BE893C1F2BDAA3A400AC9CB8 /* Main */,
@@ -78,6 +80,7 @@
 				BE893BE12BDA65A600AC9CB8 /* whisperapp.entitlements */,
 				BE893BE22BDA65A600AC9CB8 /* Preview Content */,
 				BE893C222BDAB6BB00AC9CB8 /* Localizable.xcstrings */,
+				BE893C2A2BDB2B9000AC9CB8 /* InfoPlist.xcstrings */,
 			);
 			path = whisperapp;
 			sourceTree = "<group>";
@@ -183,6 +186,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BE893C2B2BDB2B9000AC9CB8 /* InfoPlist.xcstrings in Resources */,
 				BE893BE42BDA65A600AC9CB8 /* Preview Assets.xcassets in Resources */,
 				BE893BE02BDA65A600AC9CB8 /* Assets.xcassets in Resources */,
 				BE893C232BDAB6BB00AC9CB8 /* Localizable.xcstrings in Resources */,
@@ -331,14 +335,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = whisperapp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Whisper app";
+				INFOPLIST_KEY_CFBundleDisplayName = Transcribe;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses microphone to transcribe";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -374,14 +378,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = whisperapp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Whisper app";
+				INFOPLIST_KEY_CFBundleDisplayName = Transcribe;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses microphone to transcribe";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
