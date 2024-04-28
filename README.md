@@ -1,5 +1,5 @@
-# Whisper transcribe app
-This repo is iOS/macOS app "Whisper transcribe app" source code.
+# Transcribe on device
+This repo is iOS/macOS app "Transcribe on device" source code.
 
 <img src="https://github.com/lithium0003/whisperapp/assets/4783887/6cd31c5b-2921-4fd4-8ba0-4f678f1a2d78" width="200">
 <img src="https://github.com/lithium0003/whisperapp/assets/4783887/92dd5c76-b608-4473-8710-2571d729825d" width="200">
