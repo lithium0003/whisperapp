@@ -5,10 +5,10 @@ import sys
 import coremltools as ct
 
 import whisper
-from whisper.model import Linear
 
 model_size = sys.argv[1]
-
+split = model_size.startswith('large')
+    
 model = whisper.load_model(model_size, device="cpu")
 
 encoder = model.encoder
@@ -25,6 +25,13 @@ mlmodel = ct.convert(
     inputs=[ct.TensorType(name="logmel_data", shape=input_shape)],
     outputs=[ct.TensorType(name="output")],
     compute_units=ct.ComputeUnit.CPU_AND_NE,
-    minimum_deployment_target=ct.target.iOS17,
+    minimum_deployment_target=ct.target.iOS18,
 )
 mlmodel.save(f"ggml-{model_size}-encoder.mlpackage")
+
+if split:
+    ct.models.utils.bisect_model(
+        mlmodel,
+        f"./ggml-{model_size}-encoder/",
+        merge_chunks_to_pipeline=True,
+    )

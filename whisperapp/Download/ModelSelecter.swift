@@ -8,47 +8,38 @@
 import SwiftUI
 import AVFoundation
 
-func DetectCPU() -> String {
-    var size = 0
-    sysctlbyname("hw.machine", nil, &size, nil, 0)
-
-    var machine = [CChar](repeating: 0, count: Int(size))
-    sysctlbyname("hw.machine", &machine, &size, nil, 0)
-
-    let modelIdentifier = String(cString:machine)
-    
-    return modelIdentifier
-}
-
 struct ModelSelecter: View {
-    private let cpu = DetectCPU()
+    @EnvironmentObject var userData: StateHolder
+    @AppStorage("model_size") var model_size = "tiny"
     @StateObject var downloader = Downloader()
-    @State private var isShowing = false
-    @AppStorage("model_size") var model_size = "base"
 
+    let memSize = Int(round(Double(ProcessInfo.processInfo.physicalMemory) / (1000.0 * 1000.0 * 1000.0)))
+    
     let sizes = [
-        "tiny": "73MB",
-        "base": "139MB",
-        "small": "462MB",
-        "medium": "1.5GB",
-        "large-v3": "1.9GB",
+        "tiny": "47MB",
+        "base": "93MB",
+        "small": "326MB",
+        "medium": "1.0GB",
+        "large-v2": "2.1GB",
+        "large-v3": "2.1GB",
+        "large-v3-turbo": "1.4GB",
     ]
+    
+    let modelList = ["tiny","base","small","medium","large-v3","large-v3-turbo"]
     
     var body: some View {
         VStack {
             Spacer()
             Text("Select model")
             Spacer()
+            Text("Device memory size: \(memSize)GB")
             List {
                 Section {
-                    ForEach(["tiny","base","small","medium","large-v3"], id: \.self) { size in
+                    ForEach(modelList.filter({ $0 != "large-v3" || memSize > 5 }), id: \.self) { size in
                         HStack {
                             Image(systemName: size == model_size ? "checkmark.circle.fill" : "circle")
                                 .renderingMode(.original)
                             Text(size)
-                            if size == "large-v3" {
-                                Text("(q8_0, trim)")
-                            }
                             Spacer()
                             Text(sizes[size]!)
                             Image(systemName: downloader.isDownloaded(model_size: size) ? "checkmark.circle" : "square.and.arrow.down")
@@ -63,6 +54,7 @@ struct ModelSelecter: View {
                 Section {
                     Button(action: {
                         downloader.clearAll()
+                        downloader.copy_internal()
                         let size = model_size
                         model_size = ""
                         model_size = size
@@ -70,6 +62,8 @@ struct ModelSelecter: View {
                         Text("Clear downloaded models")
                     })
                 }
+            }
+            Group {
                 if downloader.isDownloading {
                     Section("Download in progress") {
                         Text(downloader.message)
@@ -77,36 +71,23 @@ struct ModelSelecter: View {
                         ProgressView(value: downloader.progress)
                     }
                 }
-                Section {
-                    HStack {
-                        Text("CPU")
-                        Spacer()
-                        Text(cpu)
-                    }
-                    if cpu == "arm64" || (cpu.starts(with: "iPhone") && Int(cpu.replacingOccurrences(of: "iPhone", with: "").split(separator: ",").first ?? "0") ?? 0 >= 16) || (cpu.starts(with: "iPad14") && Int(cpu.replacingOccurrences(of: "iPad", with: "").split(separator: ",").last ?? "0") ?? 0 > 2) || (cpu.starts(with: "iPad") && Int(cpu.replacingOccurrences(of: "iPad", with: "").split(separator: ",").first ?? "0") ?? 0 >= 15) {
-                        Text("This device maybe ready for large-v3 model")
-                    }
-                    else {
-                        Text("This device maybe NOT raady for large-v3 model")
-                    }
+                if downloader.isDownloading {
+                    Button(role: .cancel, action: {
+                        downloader.cancel()
+                    }, label: {
+                        Text("Cancel")
+                    })
                 }
-            }
-            if downloader.isDownloading {
-                Button(role: .cancel, action: {
-                    downloader.cancel()
-                }, label: {
-                    Text("Cancel")
-                })
             }
             Button(action: {
                 if downloader.isDownloaded(model_size: model_size) {
-                    isShowing.toggle()
+                    userData.presentedPage += [.main(model_size: model_size)]
                 }
                 else {
                     downloader.download(model_size: model_size) { success in
                         if success {
                             Task.detached { @MainActor in
-                                isShowing.toggle()
+                                userData.presentedPage += [.main(model_size: model_size)]
                             }
                         }
                     }
@@ -118,27 +99,25 @@ struct ModelSelecter: View {
             Spacer(minLength: 100)
         }
         .onAppear {
+            downloader.copy_internal()
             Task {
-                switch AVAudioApplication.shared.recordPermission {
-                case .undetermined:
-                    print("undetermined")
-                    if await !AVAudioApplication.requestRecordPermission() {
+                switch AVCaptureDevice.authorizationStatus(for: .audio) {
+                case .notDetermined:
+                    print("notDetermined")
+                    if await !AVCaptureDevice.requestAccess(for: .audio) {
                         print("failed")
                         return
                     }
+                case .restricted:
+                    print("restricted")
                 case .denied:
                     print("denied")
-                    return
-                case .granted:
+                case .authorized:
                     print("granted")
-                    break
                 @unknown default:
                     fatalError()
                 }
             }
-        }
-        .fullScreenCover(isPresented: $isShowing) {
-            ContentView(whisperState: WhisperState(model_size: model_size))
         }
     }
 }

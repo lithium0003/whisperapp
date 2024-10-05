@@ -14,26 +14,78 @@ class Downloader: NSObject, ObservableObject, URLSessionDownloadDelegate {
     private var tasks: [URLSessionDownloadTask] = []
     private var handler: ((Bool)->Void)?
     private var targetList: [String] = []
-    private let baseURLstr = "https://huggingface.co/lithium0003/ggml-coreml-whisper/resolve/main/"
+    private let baseURLstr = "https://huggingface.co/lithium0003/ggml-coreml-whisper/resolve/develop240923/"
 
     private let sizes = [
-        "tiny": 149544 * 512,
-        "base": 285992 * 512,
-        "small": 947720 * 512,
-        "medium": 3000488 * 512,
-        "large-v3": 3974104 * 512,
+        "tiny": 95792 * 512,
+        "base": 191272 * 512,
+        "small": 667392 * 512,
+        "medium": 2154456 * 512,
+        "large-v2": 4392824 * 512,
+        "large-v3": 4398928 * 512,
+        "large-v3-turbo": 2850600 * 512,
     ]
 
     var bytesTransferred: Int64 = 0
     var bytesExpect: Int64 = 0
-    
+
+    func copy_internal() {
+        guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            return
+        }
+        let models = cache.appending(path: "models")
+        let index = models.appending(path: "index")
+        do {
+            if !FileManager.default.fileExists(atPath: index.path()) {
+                try FileManager.default.createDirectory(atPath: index.path(), withIntermediateDirectories: true, attributes: nil)
+            }
+        }
+        catch {
+            print(error)
+            message = error.localizedDescription
+            return
+        }
+
+        let tiny_index = Bundle.main.url(forResource: "tiny", withExtension: nil)
+        if let tiny_index = tiny_index {
+            let destUrl = index.appending(path: tiny_index.lastPathComponent)
+            do {
+                if !FileManager.default.fileExists(atPath: destUrl.path()) {
+                    try FileManager.default.copyItem(at: tiny_index, to: destUrl)
+                }
+            }
+            catch {
+                print(error)
+                message = error.localizedDescription
+            }
+        }
+        let tiny_files = [
+            Bundle.main.url(forResource: "ggml-tiny-q8_0", withExtension: "bin"),
+            Bundle.main.url(forResource: "ggml-tiny-encoder", withExtension: "mlmodelc"),
+        ]
+        for tiny_file in tiny_files {
+            if let tiny_file = tiny_file {
+                let destUrl = models.appending(path: tiny_file.lastPathComponent)
+                do {
+                    if !FileManager.default.fileExists(atPath: destUrl.path()) {
+                        try FileManager.default.copyItem(at: tiny_file, to: destUrl)
+                    }
+                }
+                catch {
+                    print(error)
+                    message = error.localizedDescription
+                }
+            }
+        }
+    }
+
     func isDownloaded(model_size: String) -> Bool {
         guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             return false
         }
         let models = cache.appending(path: "models")
         let index = models.appending(path: "index").appending(path: "\(model_size)")
-        guard let data = try? String(contentsOf: index) else {
+        guard let data = try? String(contentsOf: index, encoding: .utf8) else {
             return false
         }
         
@@ -185,7 +237,7 @@ class Downloader: NSObject, ObservableObject, URLSessionDownloadDelegate {
     func process_index(model_size: String) {
         let modelUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appending(path: "models")
         let indexUrl = modelUrl.appending(path: "index").appending(path: model_size)
-        guard let data = try? String(contentsOf: indexUrl) else {
+        guard let data = try? String(contentsOf: indexUrl, encoding: .utf8) else {
             Task.detached { @MainActor in
                 self.message = "Download error: index file not found"
             }

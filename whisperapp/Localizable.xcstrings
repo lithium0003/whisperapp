@@ -11,12 +11,13 @@
         }
       }
     },
-    "(q8_0, trim)" : {
+    "(no voice)" : {
+      "extractionState" : "manual",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ""
+            "value" : "(無発話)"
           }
         }
       }
@@ -51,6 +52,9 @@
         }
       }
     },
+    "%@" : {
+      "shouldTranslate" : false
+    },
     "%@ sec" : {
       "localizations" : {
         "ja" : {
@@ -79,17 +83,11 @@
             "value" : ""
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
-    "%lld calls" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ""
-          }
-        }
-      }
+    "%lf" : {
+      "shouldTranslate" : false
     },
     "%lld sec" : {
       "localizations" : {
@@ -339,12 +337,12 @@
         }
       }
     },
-    "CPU" : {
+    "Color by probability" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ""
+            "value" : "確率によって色づける"
           }
         }
       }
@@ -388,6 +386,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "検出有効"
+          }
+        }
+      }
+    },
+    "Device memory size: %lldGB" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端末のメモリサイズ: %lldGB"
           }
         }
       }
@@ -484,6 +492,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フランス語"
+          }
+        }
+      }
+    },
+    "Gain" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "増幅係数"
+          }
+        }
+      }
+    },
+    "Gain target level" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "増幅目標レベル"
           }
         }
       }
@@ -723,7 +751,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "言語検出しきい値"
+            "value" : "言語検出閾値"
           }
         }
       }
@@ -779,6 +807,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "リトアニア語"
+          }
+        }
+      }
+    },
+    "Logit temperature" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logit温度パラメータ"
           }
         }
       }
@@ -934,6 +972,16 @@
         }
       }
     },
+    "No speech threshold" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無発話確率閾値"
+          }
+        }
+      }
+    },
     "norwegian" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1011,6 +1059,16 @@
         }
       }
     },
+    "processing" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "処理中"
+          }
+        }
+      }
+    },
     "punjabi" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1028,6 +1086,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開始する準備ができました。"
+          }
+        }
+      }
+    },
+    "Reset to default" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "初期値に戻す"
           }
         }
       }
@@ -1061,6 +1129,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "サンスクリット"
+          }
+        }
+      }
+    },
+    "Segment probability cutoff" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会話断片の確率閾値"
           }
         }
       }
@@ -1103,6 +1181,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ショナ語"
+          }
+        }
+      }
+    },
+    "Show timestamp" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイムスタンプを表示"
           }
         }
       }
@@ -1178,6 +1266,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ソマリ語"
+          }
+        }
+      }
+    },
+    "Sound socre" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音量評価値"
+          }
+        }
+      }
+    },
+    "Sound value threshold" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音量評価値の閾値"
           }
         }
       }
@@ -1302,22 +1410,12 @@
         }
       }
     },
-    "This device maybe NOT raady for large-v3 model" : {
+    "Threshold" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この端末では、large-v3は選べません"
-          }
-        }
-      }
-    },
-    "This device maybe ready for large-v3 model" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "この端末は、large-v3がおそらく動きます"
+            "value" : "閾値"
           }
         }
       }
