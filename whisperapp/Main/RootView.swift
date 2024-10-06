@@ -12,17 +12,15 @@ struct RootView: View {
     @EnvironmentObject var userData: StateHolder
     
     var body: some View {
-        Group {
-            switch userData.presentedPage.last {
-            case .main:
-                ContentView()
-            case .edit(let text):
-                EditView(resultText: text)
-            case .config:
-                ConfigView()
-            case .none:
-                ModelSelecter()
-            }
+        switch userData.presentedPage.last {
+        case .main:
+            ContentView(whisperState: $userData.whisperState)
+        case .edit(let text):
+            EditView(resultText: text)
+        case .config:
+            ConfigView(whisperState: $userData.whisperState)
+        case .none:
+            ModelSelecter()
         }
     }
 }

@@ -11,6 +11,7 @@ import SwiftUI
 
 struct ConfigView: View {
     @EnvironmentObject var userData: StateHolder
+    @Binding var whisperState: WhisperState
 
     @AppStorage("bufferSec") var bufferSec = 10
     @AppStorage("contCount") var contCount = 15
@@ -68,7 +69,7 @@ struct ConfigView: View {
                     HStack {
                         Text("Set language")
                         Picker("Set language", selection: $language) {
-                            ForEach(userData.whisperState!.languageList, id: \.self) { lang in
+                            ForEach(whisperState.languageList, id: \.self) { lang in
                                 Text(String(localized: String.LocalizationValue(lang))).tag(lang)
                             }
                         }
@@ -132,14 +133,15 @@ struct ConfigView: View {
             }
             .padding()
             .onDisappear() {
-                userData.whisperState!.bufferSec = bufferSec
-                userData.whisperState!.contCount = contCount
-                userData.whisperState!.fixLanguage = language
-                userData.whisperState!.languageCutoff = languageCutoff
+                whisperState.bufferSec = bufferSec
+                whisperState.contCount = contCount
+                whisperState.fixLanguage = language
+                whisperState.languageCutoff = languageCutoff
             }
         }
 }
 
 #Preview {
-    ConfigView()
+    @Previewable @State var whisperState = WhisperState(model_size: "tiny")
+    ConfigView(whisperState: $whisperState)
 }

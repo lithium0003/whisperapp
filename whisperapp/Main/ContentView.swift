@@ -39,7 +39,7 @@ extension View {
 
 struct ContentView: View {
     @EnvironmentObject var userData: StateHolder
-    @State var threshold = (-35.0 + 40.0) / 40.0
+    @Binding var whisperState: WhisperState
     @State var showingAlert = false
     @State var importerPresented = false
 
@@ -65,6 +65,7 @@ struct ContentView: View {
     @State var stateColor = Color.clear
     @State var spotlighting = false
     @State var counter = 0
+    @State var logLines = 0
     var backColor: Color? {
         if colorP {
             if colorScheme == .light {
@@ -77,8 +78,6 @@ struct ContentView: View {
         colorScheme == .light ? .black : .white
     }
     
-    @State var player: AVAudioPlayer?
-    
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     
@@ -90,11 +89,6 @@ struct ContentView: View {
         return formatter
     }()
     
-    var wavURL: URL {
-        let documentURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        return documentURL.appending(path: "sound.wav")
-    }
-
     struct VLine: Shape {
         func path(in rect: CGRect) -> Path {
             var path = Path()
@@ -226,7 +220,7 @@ struct ContentView: View {
                 HStack {
                     Spacer()
                     Text("Gain")
-                    Text(userData.whisperState!.currentGain, format: .number.precision(.fractionLength(2)))
+                    Text(whisperState.currentGain, format: .number.precision(.fractionLength(2)))
                         .font(.subheadline.monospacedDigit())
                         .frame(width: 60, alignment: .trailing)
                 }
@@ -240,17 +234,17 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            if userData.whisperState!.isModelLoaded {
+            if whisperState.isModelLoaded {
                 ZStack {
                     HStack {
-                        if let tstr = tformatter.string(from: TimeInterval(Double(userData.whisperState!.timeCount) / 16000)) {
+                        if let tstr = tformatter.string(from: TimeInterval(Double(whisperState.timeCount) / 16000)) {
                             Text(tstr)
                                 .font(.body.monospacedDigit())
                         }
-                        if !userData.whisperState!.isRecording {
+                        if !whisperState.isRecording {
                             Button(action: {
-                                Task {
-                                    await userData.whisperState!.clearLog()
+                                Task.detached { @MainActor in
+                                    whisperState.clearLog()
                                 }
                             }, label: {
                                 Image(systemName: "trash")
@@ -276,39 +270,39 @@ struct ContentView: View {
             ScrollViewReader { reader in
                 ScrollView {
                     LazyVStack(spacing: 2) {
-                        ForEach(0..<userData.whisperState!.messageLog.count, id: \.self) { i in
+                        ForEach(0..<whisperState.messageLog.count, id: \.self) { i in
                             if colorP {
                                 HStack(alignment: .top) {
-                                    if showTimestamp, userData.whisperState!.messageTiming.count > i, let tstr = tformatter.string(from: TimeInterval(userData.whisperState!.messageTiming[i])) {
+                                    if showTimestamp, whisperState.messageTiming.count > i, let tstr = tformatter.string(from: TimeInterval(whisperState.messageTiming[i])) {
                                         Text(tstr)
                                             .font(.body.monospacedDigit())
                                     }
-                                    Text(userData.whisperState!.messageLog[i])
+                                    Text(whisperState.messageLog[i])
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .onTapGesture{}
                                         .onLongPressGesture(minimumDuration: 0.5) {
-                                            if userData.whisperState!.isRecording {
+                                            if whisperState.isRecording {
                                                 return
                                             }
-                                            let resultText = userData.whisperState!.messageLog.map({ String($0.characters) }).joined(separator: "\n")
+                                            let resultText = whisperState.messageLog.map({ String($0.characters) }).joined(separator: "\n")
                                             userData.presentedPage.append(.edit(text: resultText))
                                         }
                                 }
                             }
                             else {
                                 HStack(alignment: .top) {
-                                    if showTimestamp, userData.whisperState!.messageTiming.count > i, let tstr = tformatter.string(from: TimeInterval(userData.whisperState!.messageTiming[i])) {
+                                    if showTimestamp, whisperState.messageTiming.count > i, let tstr = tformatter.string(from: TimeInterval(whisperState.messageTiming[i])) {
                                         Text(tstr)
                                             .font(.body.monospacedDigit())
                                     }
-                                    Text(String(userData.whisperState!.messageLog[i].characters))
+                                    Text(String(whisperState.messageLog[i].characters))
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .onTapGesture{}
                                         .onLongPressGesture(minimumDuration: 0.5) {
-                                            if userData.whisperState!.isRecording {
+                                            if whisperState.isRecording {
                                                 return
                                             }
-                                            let resultText = userData.whisperState!.messageLog.map({ String($0.characters) }).joined(separator: "\n")
+                                            let resultText = whisperState.messageLog.map({ String($0.characters) }).joined(separator: "\n")
                                             userData.presentedPage.append(.edit(text: resultText))
                                         }
                                 }
@@ -319,11 +313,11 @@ struct ContentView: View {
                             .frame(maxWidth: .infinity, alignment: .leading).id(-1)
                     }
                 }
-                .onChange(of: userData.whisperState!.messageLog.count) { oldValue, newValue in
+                .onChange(of: whisperState.messageLog.count) { oldValue, newValue in
                     reader.scrollTo(-1)
                 }
             }
-            if userData.whisperState!.isModelLoaded {
+            if whisperState.isModelLoaded {
                 ZStack {
                     indicator
                     VLine()
@@ -340,31 +334,31 @@ struct ContentView: View {
                             Image(systemName: "gear")
                                 .font(.largeTitle)
                         })
-                        .disabled(userData.whisperState!.isRecording)
+                        .disabled(whisperState.isRecording)
 
                         Button(action: {
-                            userData.whisperState!.transrate.toggle()
+                            whisperState.transrate.toggle()
                         }, label: {
-                            if userData.whisperState!.transrate {
+                            if whisperState.transrate {
                                 Text("in English")
                             }
                             else {
                                 Text("transcribe")
                             }
                         })
-                        .disabled(userData.whisperState!.isRecording)
+                        .disabled(whisperState.isRecording)
 
                         Spacer()
                     }
                     Button(action: {
                         Task.detached {
-                            let success = await userData.whisperState!.toggleRecord()
+                            let success = await whisperState.toggleRecord()
                             Task.detached { @MainActor in
                                 showingAlert = !success
                             }
                         }
                     }, label: {
-                        if userData.whisperState!.isRecording {
+                        if whisperState.isRecording {
                             Image(systemName: "stop")
                                 .font(.largeTitle)
                         }
@@ -374,7 +368,7 @@ struct ContentView: View {
                                 .tint(.red)
                         }
                     })
-                    .disabled(userData.whisperState!.isProcessing)
+                    .disabled(whisperState.isProcessing)
                     .anchorPreference(
                         key: BoundsPreferenceKey.self,
                         value: .bounds
@@ -408,19 +402,18 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            threshold = (silentLeveldB + 40) / 40
-            userData.whisperState!.bufferSec = bufferSec
-            userData.whisperState!.silentLeveldB = Float(silentLeveldB)
-            userData.whisperState!.contCount = contCount
-            userData.whisperState!.fixLanguage = language
-            userData.whisperState!.languageCutoff = languageCutoff
-            userData.whisperState!.volDevThreshold = Float(volDevThreshold)
-            userData.whisperState!.gainTargetdB = Float(gainTargetdB)
+            whisperState.bufferSec = bufferSec
+            whisperState.silentLeveldB = Float(silentLeveldB)
+            whisperState.contCount = contCount
+            whisperState.fixLanguage = language
+            whisperState.languageCutoff = languageCutoff
+            whisperState.volDevThreshold = Float(volDevThreshold)
+            whisperState.gainTargetdB = Float(gainTargetdB)
         }
-        .onChange(of: userData.whisperState!.isModelLoaded) { oldValue, newValue in
+        .onChange(of: whisperState.isModelLoaded) { oldValue, newValue in
             if newValue {
                 Task.detached { @MainActor in
-                    userData.whisperState!.messageLog = [
+                    whisperState.messageLog = [
                         AttributedString(String(localized: "Ready to start.")),
                         AttributedString(String(localized: "LogPress to export log.")),
                     ]
@@ -439,14 +432,14 @@ struct ContentView: View {
                     spotlighting = false
                 }
             }
-            volLeveldB = Double(userData.whisperState!.volLeveldB)
-            silentLeveldB = Double(userData.whisperState!.silentLeveldB)
-            volSpec = Double(userData.whisperState!.volDev)
-            active = userData.whisperState!.active
-            waitTime = userData.whisperState!.waitTime
-            callCount = Int(userData.whisperState!.callCount)
-            detectLanguage = userData.whisperState!.language
-            if userData.whisperState!.isRecording {
+            volLeveldB = Double(whisperState.volLeveldB)
+            silentLeveldB = Double(whisperState.silentLeveldB)
+            volSpec = Double(whisperState.volDev)
+            active = whisperState.active
+            waitTime = whisperState.waitTime
+            callCount = Int(whisperState.callCount)
+            detectLanguage = whisperState.language
+            if whisperState.isRecording {
                 if active {
                     stateLog = String(localized: "[listening...]")
                     stateColor = .red
@@ -473,5 +466,6 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    @Previewable @State var whisperState = WhisperState(model_size: "tiny")
+    ContentView(whisperState: $whisperState)
 }

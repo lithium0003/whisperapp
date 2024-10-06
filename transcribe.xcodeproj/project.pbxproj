@@ -40,7 +40,7 @@
 		BE845C4D2CA0B61D001ED824 /* ggml-tiny-encoder.mlmodelc */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "ggml-tiny-encoder.mlmodelc"; sourceTree = "<group>"; };
 		BE845C4E2CA0B61D001ED824 /* ggml-tiny-q8_0.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "ggml-tiny-q8_0.bin"; sourceTree = "<group>"; };
 		BE845C4F2CA0B61D001ED824 /* tiny */ = {isa = PBXFileReference; lastKnownFileType = text; path = tiny; sourceTree = "<group>"; };
-		BE893BD82BDA65A500AC9CB8 /* whisperapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = whisperapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BE893BD82BDA65A500AC9CB8 /* transcribe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = transcribe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE893BDB2BDA65A500AC9CB8 /* whisperappApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = whisperappApp.swift; sourceTree = "<group>"; };
 		BE893BDD2BDA65A500AC9CB8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BE893BDF2BDA65A600AC9CB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -113,7 +113,7 @@
 		BE893BD92BDA65A500AC9CB8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BE893BD82BDA65A500AC9CB8 /* whisperapp.app */,
+				BE893BD82BDA65A500AC9CB8 /* transcribe.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -168,9 +168,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BE893BD72BDA65A500AC9CB8 /* whisperapp */ = {
+		BE893BD72BDA65A500AC9CB8 /* transcribe */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BE893BE72BDA65A600AC9CB8 /* Build configuration list for PBXNativeTarget "whisperapp" */;
+			buildConfigurationList = BE893BE72BDA65A600AC9CB8 /* Build configuration list for PBXNativeTarget "transcribe" */;
 			buildPhases = (
 				BE893BD42BDA65A500AC9CB8 /* Sources */,
 				BE893BD52BDA65A500AC9CB8 /* Frameworks */,
@@ -180,7 +180,7 @@
 			);
 			dependencies = (
 			);
-			name = whisperapp;
+			name = transcribe;
 			packageProductDependencies = (
 				BE893C1C2BDA803A00AC9CB8 /* whisper */,
 				BE845C772CA0CC91001ED824 /* whisper */,
@@ -190,7 +190,7 @@
 				BEB340E92CB1A63500DE57A7 /* whisper */,
 			);
 			productName = whisperapp;
-			productReference = BE893BD82BDA65A500AC9CB8 /* whisperapp.app */;
+			productReference = BE893BD82BDA65A500AC9CB8 /* transcribe.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -208,7 +208,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BE893BD32BDA65A500AC9CB8 /* Build configuration list for PBXProject "whisperapp" */;
+			buildConfigurationList = BE893BD32BDA65A500AC9CB8 /* Build configuration list for PBXProject "transcribe" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -225,7 +225,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BE893BD72BDA65A500AC9CB8 /* whisperapp */,
+				BE893BD72BDA65A500AC9CB8 /* transcribe */,
 			);
 		};
 /* End PBXProject section */
@@ -394,7 +394,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 47;
+				CURRENT_PROJECT_VERSION = 49;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
@@ -440,7 +440,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 47;
+				CURRENT_PROJECT_VERSION = 49;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
@@ -482,7 +482,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BE893BD32BDA65A500AC9CB8 /* Build configuration list for PBXProject "whisperapp" */ = {
+		BE893BD32BDA65A500AC9CB8 /* Build configuration list for PBXProject "transcribe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BE893BE52BDA65A600AC9CB8 /* Debug */,
@@ -491,7 +491,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BE893BE72BDA65A600AC9CB8 /* Build configuration list for PBXNativeTarget "whisperapp" */ = {
+		BE893BE72BDA65A600AC9CB8 /* Build configuration list for PBXNativeTarget "transcribe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BE893BE82BDA65A600AC9CB8 /* Debug */,

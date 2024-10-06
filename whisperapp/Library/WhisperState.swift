@@ -85,11 +85,14 @@ class WhisperState: NSObject, ObservableObject {
         whisperContext = nil
     }
     
-    func clearLog() async {
-        messageLog.removeAll()
-        logBuffer.removeAll()
+    @MainActor
+    func clearLog() {
+        messageLog = []
         timeCount = 0
-        await whisperContext?.reset()
+        logBuffer.removeAll()
+        Task {
+            await whisperContext?.reset()
+        }
     }
     
     private func loadModel() {

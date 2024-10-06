@@ -25,12 +25,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "whisperapp"
+            "value" : "transcribe"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "口述筆記"
           }
         }

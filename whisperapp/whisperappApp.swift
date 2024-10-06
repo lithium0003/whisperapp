@@ -23,27 +23,28 @@ class StateHolder: ObservableObject {
         }
     }
     @Published var modelSize = "" {
-        didSet {
-            if oldValue != modelSize, ["tiny", "base", "small", "medium", "large-v2", "large-v3","large-v3-turbo"].contains(modelSize) {
-                if whisperState?.model_size == modelSize {
+        willSet {
+            if newValue != modelSize, newValue != "" {
+                if whisperState?.model_size == newValue {
                     return
                 }
                 Task {
                     await whisperState?.purge()
                 }
-                whisperState = WhisperState(model_size: modelSize)
+                whisperState = WhisperState(model_size: newValue)
             }
         }
     }
-    @Published var whisperState: WhisperState?
+    @Published var whisperState: WhisperState!
 }
 
 @main
 struct whisperappApp: App {
+    @StateObject var stateHolder = StateHolder()
     var body: some Scene {
         WindowGroup {
             RootView()
-                .environmentObject(StateHolder())
+                .environmentObject(stateHolder)
         }
     }
 }
