@@ -41,6 +41,20 @@ class WhisperState: NSObject, ObservableObject {
     @Published var bufferSec = 30
     @Published var contCount = 5
 
+    var silenceMap: [Double: Double] = [:]
+    func fixTimestamp(_ t: Double) -> Double {
+        let keys = silenceMap.keys.sorted()
+        var silence = 0.0
+        for key in keys {
+            if t + silenceMap[key]! < key {
+                return t + silence
+            }
+            silence += silenceMap[key]!
+        }
+        return t + silence
+    }
+    
+    
     var languageList: [String] {
         if let list = whisperContext?.languageList {
             return ["auto"] + list
@@ -91,6 +105,7 @@ class WhisperState: NSObject, ObservableObject {
         messageLog = []
         timeCount = 0
         logBuffer.removeAll()
+        silenceMap.removeAll()
         Task {
             await whisperContext?.reset()
         }
@@ -167,7 +182,7 @@ class WhisperState: NSObject, ObservableObject {
     }
 
     actor Processer {
-        private(set) var gain: Float = 100.0
+        private(set) var gain: Float = 1.0
         private let contCount: Int
         private var scount: Int
         private var lastCall = Date()
@@ -176,18 +191,6 @@ class WhisperState: NSObject, ObservableObject {
 
         func stop() async {
             await parent.whisperContext?.stop()
-        }
-
-        func fixGain(diff: Int) {
-            if gain < 1.0, gain * pow(1.1, Float(diff)) > 1.0 {
-                gain = 1.0
-            }
-            else if gain > 1.0, gain * pow(1.1, Float(diff)) < 1.0 {
-                gain = 1.0
-            }
-            else {
-                gain *= pow(1.1, Float(diff))
-            }
         }
 
         class SoundBuffer {
@@ -227,8 +230,9 @@ class WhisperState: NSObject, ObservableObject {
 
             func append_preData(data: [Float]) {
                 preBuffer.append(contentsOf: data)
-                if preBuffer.count > preLength {
-                    preBuffer.removeFirst(preBuffer.count - preLength)
+                let rmLength = preBuffer.count - preLength
+                if rmLength > 0 {
+                    preBuffer.removeFirst(rmLength)
                 }
             }
 
@@ -240,9 +244,10 @@ class WhisperState: NSObject, ObservableObject {
                 else {
                     fixData = data
                 }
+                let preLength = preBuffer.count
                 preBuffer = []
                 soundBuf.append(contentsOf: fixData)
-                return fixData.count
+                return preLength
             }
 
             func read_buffer(internalLength: Int) -> (buf: [Float], flush: Bool) {
@@ -356,7 +361,7 @@ class WhisperState: NSObject, ObservableObject {
 
             if parent.volLeveldB < parent.gainTargetdB {
                 let newGain = pow(10.0, (parent.gainTargetdB - max(parent.volLeveldB, -120)) / 20.0) * gain
-                gain = (1 - 0.1) * gain + 0.1 * newGain
+                gain = (1 - 0.25) * gain + 0.25 * newGain
                 gain = min(gain, 1000)
             }
 
@@ -368,10 +373,14 @@ class WhisperState: NSObject, ObservableObject {
             }
             parent.active = scount < contCount
 
+            Task.detached { @MainActor in
+                self.parent.timeCount += gainedData.count
+            }
+
             if parent.active {
                 let c = buffer.append_data(data: gainedData)
-                Task.detached { @MainActor in
-                    self.parent.timeCount += c
+                if let lastSilence = parent.silenceMap.keys.sorted().last {
+                    parent.silenceMap[lastSilence]! -= Double(c) / 16000
                 }
                 buffer.lastSound = Date()
             }
@@ -379,6 +388,17 @@ class WhisperState: NSObject, ObservableObject {
                 buffer.append_preData(data: gainedData)
                 if scount < contCount {
                     buffer.lastSound = Date()
+                }
+                else if scount == contCount {
+                    parent.silenceMap[Double(parent.timeCount) / 16000] = Double(gainedData.count) / 16000
+                }
+                else {
+                    if let lastSilence = parent.silenceMap.keys.sorted().last {
+                        parent.silenceMap[lastSilence]! += Double(gainedData.count) / 16000
+                    }
+                    else {
+                        parent.silenceMap[Double(parent.timeCount) / 16000] = Double(gainedData.count) / 16000
+                    }
                 }
             }
 
@@ -453,7 +473,7 @@ class WhisperState: NSObject, ObservableObject {
                     let buf = await logBuffer
                     let v = buf.keys.sorted(by: { $0.start < $1.start }).map({ (buf[$0]!, Double($0.start) / 16000) })
                     parent.messageLog = v.map(\.0)
-                    parent.messageTiming = v.map(\.1)
+                    parent.messageTiming = v.map(\.1).map(parent.fixTimestamp)
                 }
             }
         }
@@ -463,6 +483,9 @@ class WhisperState: NSObject, ObservableObject {
     func toggleRecord() async -> Bool {
         if isRecording, isPlaying {
             await togglePlay(file: URL(fileURLWithPath: ""))
+        }
+        Task.detached { @MainActor [self] in
+            isPlaying = false
         }
         if isRecording {
             Task.detached { @MainActor [self] in
@@ -520,7 +543,7 @@ class WhisperState: NSObject, ObservableObject {
             }
             recorder.startRecording { [self] data in
                 Task.detached { [self] in
-                    await processer!.process_samples(sample: data)
+                    await processer?.process_samples(sample: data)
                 }
                 Task.detached { @MainActor [self] in
                     currentGain = await Double(processer?.gain ?? 1.0)
@@ -598,7 +621,7 @@ class WhisperState: NSObject, ObservableObject {
                     }
                 }
                 Task.detached { [self] in
-                    await processer!.process_samples(sample: data)
+                    await processer?.process_samples(sample: data)
                 }
                 Task.detached { @MainActor [self] in
                     currentGain = await Double(processer?.gain ?? 1.0)

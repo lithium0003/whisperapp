@@ -222,7 +222,7 @@ struct ContentView: View {
                     Text("Gain")
                     Text(whisperState.currentGain, format: .number.precision(.fractionLength(2)))
                         .font(.subheadline.monospacedDigit())
-                        .frame(width: 60, alignment: .trailing)
+                        .frame(width: 80, alignment: .trailing)
                 }
                 VolumeView(volume: volLeveldB, active: active)
                 Spacer().frame(height: 45)
