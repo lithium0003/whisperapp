@@ -158,14 +158,6 @@ actor WhisperContext {
         backWav = []
         processPoint = backPoint
     }
-    
-    func stop() {
-        if backPoint < 0 {
-            backPoint = 0
-        }
-        backWav = []
-        processPoint = backPoint
-    }
 
     func reset() {
         backPoint = 0
@@ -232,7 +224,7 @@ actor WhisperContext {
         let lang_id = whisper_full_lang_id(context)
         if lang_id < 0 {
             lang_callback?("(no voice)")
-            var shift = samples.isEmpty ? 16000 * 28 : 0
+            var shift = samples.isEmpty ? 16000 * 15 : 0
             if backWav.count > 16000 * 60 {
                 shift = 16000 * 15
             }
@@ -424,7 +416,7 @@ actor WhisperContext {
             processPoint = lastStop
         }
         
-        var shift = samples.isEmpty ? 16000 * 28 : samples.count
+        var shift = samples.isEmpty ? 16000 * 15 : samples.count
         if backWav.count - shift > 16000 * 60 {
             shift = 16000 * 15
         }

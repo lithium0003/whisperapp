@@ -43,13 +43,12 @@ class WhisperState: NSObject, ObservableObject {
 
     var silenceMap: [Double: Double] = [:]
     func fixTimestamp(_ t: Double) -> Double {
-        let keys = silenceMap.keys.sorted()
         var silence = 0.0
-        for key in keys {
-            if t + silenceMap[key]! < key {
+        for (key, value) in silenceMap.sorted(by: { $0.key < $1.key }) {
+            if t + value < key {
                 return t + silence
             }
-            silence += silenceMap[key]!
+            silence += value
         }
         return t + silence
     }
@@ -190,7 +189,7 @@ class WhisperState: NSObject, ObservableObject {
         private var logBuffer: [TimeKey: AttributedString] = [:]
 
         func stop() async {
-            await parent.whisperContext?.stop()
+            await parent.whisperContext?.clear()
         }
 
         class SoundBuffer {
@@ -236,7 +235,7 @@ class WhisperState: NSObject, ObservableObject {
                 }
             }
 
-            func append_data(data: [Float]) -> Int {
+            func append_data(data: [Float]) {
                 let fixData: [Float]
                 if !preBuffer.isEmpty {
                     fixData = preBuffer + data
@@ -244,10 +243,8 @@ class WhisperState: NSObject, ObservableObject {
                 else {
                     fixData = data
                 }
-                let preLength = preBuffer.count
                 preBuffer = []
                 soundBuf.append(contentsOf: fixData)
-                return preLength
             }
 
             func read_buffer(internalLength: Int) -> (buf: [Float], flush: Bool) {
@@ -378,10 +375,7 @@ class WhisperState: NSObject, ObservableObject {
             }
 
             if parent.active {
-                let c = buffer.append_data(data: gainedData)
-                if let lastSilence = parent.silenceMap.keys.sorted().last {
-                    parent.silenceMap[lastSilence]! -= Double(c) / 16000
-                }
+                buffer.append_data(data: gainedData)
                 buffer.lastSound = Date()
             }
             else {
@@ -438,7 +432,7 @@ class WhisperState: NSObject, ObservableObject {
                 await callTranscribe(samples: [], transrate: parent.transrate)
                 lastCall = Date()
             }
-            await parent.whisperContext?.stop()
+            await parent.whisperContext?.clear()
             parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
             parent.logBuffer = logBuffer
         }

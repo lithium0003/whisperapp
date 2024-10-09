@@ -40,8 +40,9 @@ extension View {
 struct ContentView: View {
     @EnvironmentObject var userData: StateHolder
     @Binding var whisperState: WhisperState
-    @State var showingAlert = false
-    @State var importerPresented = false
+    @State private var showingAlert = false
+    @State private var importerPresented = false
+    @State private var isDragging = false
 
     @AppStorage("silentLevel") var silentLeveldB = -20.0
     @AppStorage("gainTargetLevel") var gainTargetdB = 0.0
@@ -500,9 +501,26 @@ struct ContentView: View {
                     await whisperState.togglePlay(file: url)
                 }
             case .failure:
-              print("failure")
+                print("failure")
             }
-          }
+        }
+        .onDrop(of: [.fileURL], isTargeted: $isDragging) { providers in
+            let validProviders: [NSItemProvider] = providers.filter { $0.canLoadObject(ofClass: URL.self) }
+            if validProviders.isEmpty {
+                return false
+            }
+            
+            providers.forEach { provider in
+                let _ = provider.loadObject(ofClass: URL.self) { url, error in
+                    guard let url else { return }
+                    print(url)
+                    Task.detached {
+                        await whisperState.togglePlay(file: url)
+                    }
+                }
+            }
+            return true
+        }
     }
 }
 
