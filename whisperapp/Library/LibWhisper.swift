@@ -166,6 +166,7 @@ actor WhisperContext {
     
     func fullTranscribe(samples: [Float], fixlang: String = "auto", transrate: Bool = false, language_thold: Float, lang_callback: ((String)->Void)?) -> [TimeKey: AttributedString] {
         var result: [TimeKey: AttributedString] = [:]
+        let hallucinationPatch = !transrate
         guard isLive else {
             lang_callback?("")
             return result
@@ -318,21 +319,44 @@ actor WhisperContext {
                     }
                 }
             }
-            if t_tw.count > 1 {
-                var score = 0.0
-                var count = 0
-                for ((s,p),(tw0,tw1)) in zip(zip(isPunctuation,probs), zip(t_tw, t_tw.dropFirst())) {
-                    if s {
-                        continue
+            if hallucinationPatch {
+                if t_tw.count > 1 {
+                    var score = 0.0
+                    var count = 0
+                    for ((s,p),(tw0,tw1)) in zip(zip(isPunctuation,probs), zip(t_tw, t_tw.dropFirst())) {
+                        if s {
+                            continue
+                        }
+                        if tw0 <= 0 {
+                            continue
+                        }
+                        let duration = Double(tw1 - tw0) * 0.01
+                        if duration < 0 {
+                            continue
+                        }
+                        print(count,duration)
+                        if p < 0.15 {
+                            score += 1.0
+                        }
+                        if duration < 0.0666 {
+                            score += (0.0666 - duration) * 30
+                        }
+                        if duration > 2.0 {
+                            score += duration - 2.0
+                        }
+                        count += 1
+                        if count >= 8 {
+                            break
+                        }
                     }
-                    if tw0 <= 0 {
-                        continue
+                    if score >= 3 || score + 0.01 >= Double(count) {
+                        valid = false
                     }
-                    let duration = Double(tw1 - tw0) * 0.01
-                    if duration < 0 {
-                        continue
-                    }
-                    print(count,duration)
+                    print(valid, score, str)
+                }
+                else if t_tw.count == 1, let p = probs.first {
+                    var score = 0.0
+                    let duration = Double(t1 - t0) * 0.01
                     if p < 0.15 {
                         score += 1.0
                     }
@@ -342,52 +366,31 @@ actor WhisperContext {
                     if duration > 2.0 {
                         score += duration - 2.0
                     }
-                    count += 1
-                    if count >= 8 {
-                        break
+                    if score >= 3 || score + 0.01 >= 1 {
+                        valid = false
                     }
+                    print(valid, score, str)
                 }
-                if score >= 3 || score + 0.01 >= Double(count) {
+                if probs.count > 0 {
+                    logsumprob = probs.map({ log10($0) }).reduce(0.0, +)
+                    sumprob = pow(10, logsumprob / Double(probs.count))
+                    if sumprob < segmentProbThold {
+                        valid = false
+                    }
+                    print(valid, sumprob, segmentProbThold)
+                }
+                if probs.count < 2, !t_tw.isEmpty {
+                    if t_tw[0] < t0 || t_tw[0] > t1 {
+                        valid = false
+                    }
+                    print(valid, t0, t_tw[0], t1)
+                }
+                if let t_min = t_tw.first, t_min > t1 || t_min < t0 - 300 {
                     valid = false
                 }
-                print(valid, score, str)
-            }
-            else if t_tw.count == 1, let p = probs.first {
-                var score = 0.0
-                let duration = Double(t1 - t0) * 0.01
-                if p < 0.15 {
-                    score += 1.0
-                }
-                if duration < 0.0666 {
-                    score += (0.0666 - duration) * 30
-                }
-                if duration > 2.0 {
-                    score += duration - 2.0
-                }
-                if score >= 3 || score + 0.01 >= 1 {
+                if let t_max = t_tw.last, t_max < t0 || t_max > t_end + 100 || t_max > t1 + 300 {
                     valid = false
                 }
-                print(valid, score, str)
-            }
-            if probs.count > 0 {
-                logsumprob = probs.map({ log10($0) }).reduce(0.0, +)
-                sumprob = pow(10, logsumprob / Double(probs.count))
-                if sumprob < segmentProbThold {
-                    valid = false
-                }
-                print(valid, sumprob, segmentProbThold)
-            }
-            if probs.count < 2, !t_tw.isEmpty {
-                if t_tw[0] < t0 || t_tw[0] > t1 {
-                    valid = false
-                }
-                print(valid, t0, t_tw[0], t1)
-            }
-            if let t_min = t_tw.first, t_min > t1 || t_min < t0 - 300 {
-                valid = false
-            }
-            if let t_max = t_tw.last, t_max < t0 || t_max > t_end + 100 || t_max > t1 + 300 {
-                valid = false
             }
             if !valid {
                 print("skip", t_tw)
@@ -409,7 +412,7 @@ actor WhisperContext {
                 all_probs.append(contentsOf: probs)
             }
         }
-        if !all_probs.isEmpty {
+        if hallucinationPatch, !all_probs.isEmpty {
             let sumprob = pow(10, all_probs.map({ log10($0) }).reduce(0.0, +) / Double(all_probs.count))
             let lowProbCount = all_probs.filter({ $0 < segmentProbThold }).count
             print(sumprob, lowProbCount)
