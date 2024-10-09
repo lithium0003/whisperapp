@@ -11,7 +11,7 @@ import AVFoundation
 struct ModelSelecter: View {
     @EnvironmentObject var userData: StateHolder
     @AppStorage("model_size") var model_size = "tiny"
-    @StateObject var downloader = Downloader()
+    @ObservedObject var downloader: Downloader
 
     let memSize = Int(round(Double(ProcessInfo.processInfo.physicalMemory) / (1000.0 * 1000.0 * 1000.0)))
     
@@ -123,5 +123,6 @@ struct ModelSelecter: View {
 }
 
 #Preview {
-    ModelSelecter()
+    @StateObject var downloader = Downloader()
+    ModelSelecter(downloader: downloader)
 }

@@ -176,10 +176,18 @@ actor WhisperContext {
         }
 
         backWav += samples
-        if backWav.count < 16000 * 28 {
-            let padlen = 16000 * 28 - backWav.count
-            backWav = [Float](repeating: 0, count: padlen) + backWav
-            backPoint -= padlen
+        if backWav.isEmpty {
+            return result
+        }
+        let padlen = 16000 * 28 - backWav.count
+        if padlen > 0 {
+            if samples.isEmpty {
+                backWav += [Float](repeating: 0, count: padlen)
+            }
+            else {
+                backWav = [Float](repeating: 0, count: padlen) + backWav
+                backPoint -= padlen
+            }
         }
 
         let t_end = 2800
@@ -224,9 +232,9 @@ actor WhisperContext {
         let lang_id = whisper_full_lang_id(context)
         if lang_id < 0 {
             lang_callback?("(no voice)")
-            var shift = samples.isEmpty ? 16000 * 15 : 0
+            var shift = samples.isEmpty ? 16000 * 10 : 0
             if backWav.count > 16000 * 60 {
-                shift = 16000 * 15
+                shift += 16000 * 15
             }
 
             if shift > 0 {
@@ -416,9 +424,9 @@ actor WhisperContext {
             processPoint = lastStop
         }
         
-        var shift = samples.isEmpty ? 16000 * 15 : samples.count
+        var shift = samples.isEmpty ? 16000 * 10 : samples.count
         if backWav.count - shift > 16000 * 60 {
-            shift = 16000 * 15
+            shift += 16000 * 15
         }
         
         if !samples.isEmpty {
@@ -431,13 +439,19 @@ actor WhisperContext {
         }
 
         if shift > 0 {
-            if shift < backWav.count {
-                backPoint += shift
-                backWav.removeFirst(shift)
+            if samples.isEmpty, padlen > 0, shift > padlen {
+                backPoint += backWav.count - padlen
+                backWav.removeAll()
             }
             else {
-                backPoint += backWav.count
-                backWav.removeAll()
+                if shift < backWav.count {
+                    backPoint += shift
+                    backWav.removeFirst(shift)
+                }
+                else {
+                    backPoint += backWav.count
+                    backWav.removeAll()
+                }
             }
         }
 

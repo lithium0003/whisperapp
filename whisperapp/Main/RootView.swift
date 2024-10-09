@@ -10,6 +10,7 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject var userData: StateHolder
+    @StateObject var downloader = Downloader()
     
     var body: some View {
         switch userData.presentedPage.last {
@@ -20,7 +21,7 @@ struct RootView: View {
         case .config:
             ConfigView(whisperState: $userData.whisperState)
         case .none:
-            ModelSelecter()
+            ModelSelecter(downloader: downloader)
         }
     }
 }
