@@ -31,6 +31,7 @@
 		BE893C232BDAB6BB00AC9CB8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BE893C222BDAB6BB00AC9CB8 /* Localizable.xcstrings */; };
 		BE893C2B2BDB2B9000AC9CB8 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BE893C2A2BDB2B9000AC9CB8 /* InfoPlist.xcstrings */; };
 		BEB340EA2CB1A63500DE57A7 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BEB340E92CB1A63500DE57A7 /* whisper */; };
+		BEB341112CB64D4300DE57A7 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEB341102CB64D4300DE57A7 /* Player.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +56,7 @@
 		BE893C222BDAB6BB00AC9CB8 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		BE893C2A2BDB2B9000AC9CB8 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		BE893C2E2BDB2C9B00AC9CB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BEB341102CB64D4300DE57A7 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +82,7 @@
 				BE893BF92BDA67C500AC9CB8 /* WhisperState.swift */,
 				BE893BF72BDA67C500AC9CB8 /* LibWhisper.swift */,
 				BE893BF82BDA67C500AC9CB8 /* Recoder.swift */,
+				BEB341102CB64D4300DE57A7 /* Player.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -256,6 +259,7 @@
 				BE893BDE2BDA65A500AC9CB8 /* ContentView.swift in Sources */,
 				BE845C4A2CA0B3E2001ED824 /* EditView.swift in Sources */,
 				BE893BDC2BDA65A500AC9CB8 /* whisperappApp.swift in Sources */,
+				BEB341112CB64D4300DE57A7 /* Player.swift in Sources */,
 				BE893BFA2BDA67C500AC9CB8 /* LibWhisper.swift in Sources */,
 				BE893BFC2BDA67C500AC9CB8 /* WhisperState.swift in Sources */,
 				BE893BED2BDA66AA00AC9CB8 /* ModelSelecter.swift in Sources */,
@@ -394,7 +398,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
@@ -420,7 +424,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = info.lithium03.whisperapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = NO;
@@ -440,7 +444,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
@@ -466,7 +470,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = info.lithium03.whisperapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = NO;

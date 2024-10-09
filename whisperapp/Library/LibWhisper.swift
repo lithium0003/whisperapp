@@ -59,7 +59,7 @@ func filterTimeKey(_ keys: [TimeKey]) -> [TimeKey] {
             winner.append(a)
             continue
         }
-        if winner.contains(where: { a.start <= $0.stop && a.stop >= $0.start }) {
+        if winner.contains(where: { a.start <= $0.stop - 1600 * 3 && a.stop >= $0.start + 1600 * 3 }) {
             continue
         }
         winner.append(a)
@@ -233,7 +233,7 @@ actor WhisperContext {
         if lang_id < 0 {
             lang_callback?("(no voice)")
             var shift = samples.isEmpty ? 16000 * 28 : 0
-            if backWav.count > 16000 * 30 {
+            if backWav.count > 16000 * 60 {
                 shift = 16000 * 15
             }
 
@@ -425,7 +425,7 @@ actor WhisperContext {
         }
         
         var shift = samples.isEmpty ? 16000 * 28 : samples.count
-        if backWav.count - shift > 16000 * 45 {
+        if backWav.count - shift > 16000 * 60 {
             shift = 16000 * 15
         }
         

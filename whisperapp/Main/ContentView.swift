@@ -350,6 +350,7 @@ struct ContentView: View {
 
                         Spacer()
                     }
+
                     Button(action: {
                         Task.detached {
                             let success = await whisperState.toggleRecord()
@@ -373,6 +374,31 @@ struct ContentView: View {
                         key: BoundsPreferenceKey.self,
                         value: .bounds
                     ) { spotlighting ? [$0] : [] }
+
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            if whisperState.isRecording {
+                                Task.detached {
+                                    await whisperState.togglePlay(file: URL(fileURLWithPath: ""))
+                                }
+                            }
+                            else {
+                                importerPresented = true
+                            }
+                        }, label: {
+                            if whisperState.isRecording {
+                                Image(systemName: "stop")
+                                    .font(.largeTitle)
+                            }
+                            else {
+                                Image(systemName: "play.circle")
+                                    .font(.largeTitle)
+                                    .tint(.green)
+                            }
+                        })
+                        .disabled(whisperState.isProcessing)
+                    }
                 }
             }
             else {
@@ -462,6 +488,17 @@ struct ContentView: View {
             Alert(title: Text("Microphone permission error"),
                   message: Text("Failed to get permission for microphone to recode voice."))
         }
+        .fileImporter(isPresented: $importerPresented, allowedContentTypes: [.movie, .audio]) { result in
+            switch result {
+            case .success(let url):
+                print(url)
+                Task.detached {
+                    await whisperState.togglePlay(file: url)
+                }
+            case .failure:
+              print("failure")
+            }
+          }
     }
 }
 

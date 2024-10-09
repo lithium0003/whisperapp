@@ -15,12 +15,12 @@ class WhisperState: NSObject, ObservableObject {
     let model_size: String
     @Published var isModelLoaded = false
     @Published var isRecording = false
+    @Published var isPlaying = false
     @Published var isProcessing = false
     @Published var fixLanguage = "auto"
     @Published var transrate = false
     @Published var messageLog: [AttributedString] = []
     @Published var messageTiming: [Double] = []
-    @Published var gainControl = 0
     @Published var currentGain = 1.0
     @Published var timeCount = 0
 
@@ -50,6 +50,7 @@ class WhisperState: NSObject, ObservableObject {
     
     private var whisperContext: WhisperContext?
     private var recorder = Recorder()
+    private var player = Player()
     
     private var modelUrl: URL? {
         guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
@@ -166,7 +167,7 @@ class WhisperState: NSObject, ObservableObject {
     }
     
     actor Processer {
-        private(set) var gain: Float = 1.0
+        private(set) var gain: Float = 100.0
         private let contCount: Int
         private var scount: Int
         private var lastCall = Date()
@@ -356,6 +357,7 @@ class WhisperState: NSObject, ObservableObject {
             if parent.volLeveldB < parent.gainTargetdB {
                 let newGain = pow(10.0, (parent.gainTargetdB - max(parent.volLeveldB, -120)) / 20.0) * gain
                 gain = (1 - 0.1) * gain + 0.1 * newGain
+                gain = min(gain, 1000)
             }
 
             if parent.volLeveldB > parent.silentLeveldB && parent.volDev > parent.volDevThreshold {
@@ -459,6 +461,9 @@ class WhisperState: NSObject, ObservableObject {
     var processer: Processer?
     
     func toggleRecord() async -> Bool {
+        if isRecording, isPlaying {
+            await togglePlay(file: URL(fileURLWithPath: ""))
+        }
         if isRecording {
             Task.detached { @MainActor [self] in
                 isProcessing = true
@@ -489,11 +494,14 @@ class WhisperState: NSObject, ObservableObject {
                 print("notDetermined")
                 if await !AVCaptureDevice.requestAccess(for: .audio) {
                     print("failed")
+                    return false
                 }
             case .restricted:
                 print("restricted")
+                return false
             case .denied:
                 print("denied")
+                return false
             case .authorized:
                 print("granted")
             @unknown default:
@@ -511,20 +519,11 @@ class WhisperState: NSObject, ObservableObject {
                 }
             }
             recorder.startRecording { [self] data in
-                Task.detached { @MainActor [self] in
-                    currentGain = await Double(processer?.gain ?? 1.0)
-                }
-                if gainControl != 0 {
-                    Task.detached { @MainActor [self] in
-                        let diff = gainControl
-                        gainControl = 0
-                        Task.detached { [self] in
-                            await processer?.fixGain(diff: diff)
-                        }
-                    }
-                }
                 Task.detached { [self] in
                     await processer!.process_samples(sample: data)
+                }
+                Task.detached { @MainActor [self] in
+                    currentGain = await Double(processer?.gain ?? 1.0)
                 }
             }
             Task.detached { @MainActor [self] in
@@ -534,6 +533,80 @@ class WhisperState: NSObject, ObservableObject {
         }
         return true
     }
+    
+    func togglePlay(file: URL) async {
+        if isRecording, !isPlaying {
+            _ = await toggleRecord()
+        }
+        Task.detached { @MainActor [self] in
+            isPlaying = true
+        }
+        if isRecording {
+            Task.detached { @MainActor [self] in
+                isProcessing = true
+            }
+            player.stopRecording()
+            active = false
+            volLeveldB = -40
+            volDev = 0
+            
+            while player.recording {
+                try? await Task.sleep(for: .milliseconds(100))
+            }
+
+            await processer?.finish_process()
+            
+            await processer?.stop()
+            Task.detached { @MainActor [self] in
+                isRecording = player.recording
+                processer = nil
+#if os(iOS)
+                UIApplication.shared.isIdleTimerDisabled = false
+#endif
+                isProcessing = false
+            }
+        } else {
+            callCount = 0
+            processer = Processer(parent: self)
+            Task.detached { @MainActor [self] in
+                isProcessing = true
+#if os(iOS)
+                UIApplication.shared.isIdleTimerDisabled = true
+#endif
+                if timeCount == 0 {
+                    messageLog.removeAll()
+                }
+            }
+            player.startRecording(file: file) { [self] data in
+                if data.isEmpty {
+                    Task.detached { [self] in
+                        await processer?.finish_process()
+                        
+                        await processer?.stop()
+                        Task.detached { @MainActor [self] in
+                            isRecording = player.recording
+                            processer = nil
+#if os(iOS)
+                            UIApplication.shared.isIdleTimerDisabled = false
+#endif
+                            isProcessing = false
+                        }
+                    }
+                }
+                Task.detached { [self] in
+                    await processer!.process_samples(sample: data)
+                }
+                Task.detached { @MainActor [self] in
+                    currentGain = await Double(processer?.gain ?? 1.0)
+                }
+            }
+            Task.detached { @MainActor [self] in
+                isRecording = player.recording
+                isProcessing = false
+            }
+        }
+    }
 }
+    
  
 
