@@ -595,6 +595,7 @@ class WhisperState: NSObject, ObservableObject {
                 }
             }
             player.startRecording(file: file) { [self] data in
+                player.needToSleep = callCount > 0
                 if data.isEmpty {
                     Task.detached { [self] in
                         await processer?.finish_process()

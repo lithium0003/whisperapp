@@ -59,7 +59,7 @@ func filterTimeKey(_ keys: [TimeKey]) -> [TimeKey] {
             winner.append(a)
             continue
         }
-        if winner.contains(where: { a.start <= $0.stop - 1600 * 3 && a.stop >= $0.start + 1600 * 3 }) {
+        if winner.contains(where: { a.start <= $0.stop - 1600 * 1 && a.stop >= $0.start + 1600 * 1 }) {
             continue
         }
         winner.append(a)
@@ -211,7 +211,7 @@ actor WhisperContext {
             params.no_speech_thold  = Float(noSpeechThold)
             params.max_initial_ts   = Float(t_end) * 0.01
             params.beam_search.beam_size = 8
-            params.entropy_thold    = 2.4
+            params.entropy_thold    = 2.8
             params.suppress_blank   = false
             params.suppress_non_speech_tokens = true
             params.no_timestamps    = false

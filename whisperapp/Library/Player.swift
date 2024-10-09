@@ -12,6 +12,7 @@ class Player: NSObject {
     private(set) var recording = false
     private(set) var isLive = false
     private var outputBuf = [Float]()
+    var needToSleep = false
 
     enum RecorderError: Error {
         case couldNotStartRecording
@@ -63,7 +64,13 @@ class Player: NSObject {
                 while outputBuf.count > 160 * 20 {
                     callback(Array(outputBuf[0..<(160 * 20)]))
                     outputBuf.removeFirst(160 * 20)
-                    try await Task.sleep(for: .milliseconds(20))
+                    if needToSleep {
+                        try await Task.sleep(for: .milliseconds(200))
+                    }
+                    else {
+                        try await Task.sleep(for: .milliseconds(1))
+                    }
+                    await Task.yield()
                 }
             }
         }

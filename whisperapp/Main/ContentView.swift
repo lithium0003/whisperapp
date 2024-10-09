@@ -504,18 +504,31 @@ struct ContentView: View {
                 print("failure")
             }
         }
-        .onDrop(of: [.fileURL], isTargeted: $isDragging) { providers in
-            let validProviders: [NSItemProvider] = providers.filter { $0.canLoadObject(ofClass: URL.self) }
+        .onDrop(of: [.item], isTargeted: $isDragging) { providers in
+            let validProviders: [NSItemProvider] = providers.filter { $0.hasRepresentationConforming(toTypeIdentifier: UTType.movie.identifier, fileOptions: [.openInPlace]) || $0.hasRepresentationConforming(toTypeIdentifier: UTType.audio.identifier, fileOptions: [.openInPlace]) }
             if validProviders.isEmpty {
                 return false
             }
             
             providers.forEach { provider in
-                let _ = provider.loadObject(ofClass: URL.self) { url, error in
+                provider.loadInPlaceFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { url, isInPlace, error in
                     guard let url else { return }
                     print(url)
-                    Task.detached {
-                        await whisperState.togglePlay(file: url)
+                    var error: NSError?
+                    NSFileCoordinator().coordinate(readingItemAt: url, error: &error) { url in
+                        Task {
+                            await whisperState.togglePlay(file: url)
+                        }
+                    }
+                }
+                provider.loadInPlaceFileRepresentation(forTypeIdentifier: UTType.audio.identifier) { url, isInPlace, error in
+                    guard let url else { return }
+                    print(url)
+                    var error: NSError?
+                    NSFileCoordinator().coordinate(readingItemAt: url, error: &error) { url in
+                        Task {
+                            await whisperState.togglePlay(file: url)
+                        }
                     }
                 }
             }
