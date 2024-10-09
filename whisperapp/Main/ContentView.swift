@@ -351,40 +351,13 @@ struct ContentView: View {
                         Spacer()
                     }
 
-                    Button(action: {
-                        Task.detached {
-                            let success = await whisperState.toggleRecord()
-                            Task.detached { @MainActor in
-                                showingAlert = !success
-                            }
-                        }
-                    }, label: {
-                        if whisperState.isRecording {
-                            Image(systemName: "stop")
-                                .font(.largeTitle)
-                        }
-                        else {
-                            Image(systemName: "waveform.badge.mic")
-                                .font(.largeTitle)
-                                .tint(.red)
-                        }
-                    })
-                    .disabled(whisperState.isProcessing)
-                    .anchorPreference(
-                        key: BoundsPreferenceKey.self,
-                        value: .bounds
-                    ) { spotlighting ? [$0] : [] }
-
-                    HStack {
-                        Spacer()
+                    if !whisperState.isPlaying || !whisperState.isRecording {
                         Button(action: {
-                            if whisperState.isRecording {
-                                Task.detached {
-                                    await whisperState.togglePlay(file: URL(fileURLWithPath: ""))
+                            Task.detached {
+                                let success = await whisperState.toggleRecord()
+                                Task.detached { @MainActor in
+                                    showingAlert = !success
                                 }
-                            }
-                            else {
-                                importerPresented = true
                             }
                         }, label: {
                             if whisperState.isRecording {
@@ -392,12 +365,43 @@ struct ContentView: View {
                                     .font(.largeTitle)
                             }
                             else {
-                                Image(systemName: "play.circle")
+                                Image(systemName: "waveform.badge.mic")
                                     .font(.largeTitle)
-                                    .tint(.green)
+                                    .tint(.red)
                             }
                         })
                         .disabled(whisperState.isProcessing)
+                        .anchorPreference(
+                            key: BoundsPreferenceKey.self,
+                            value: .bounds
+                        ) { spotlighting ? [$0] : [] }
+                    }
+
+                    if whisperState.isPlaying || !whisperState.isRecording {
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                if whisperState.isRecording {
+                                    Task.detached {
+                                        await whisperState.togglePlay(file: URL(fileURLWithPath: ""))
+                                    }
+                                }
+                                else {
+                                    importerPresented = true
+                                }
+                            }, label: {
+                                if whisperState.isRecording {
+                                    Image(systemName: "stop")
+                                        .font(.largeTitle)
+                                }
+                                else {
+                                    Image(systemName: "play.circle")
+                                        .font(.largeTitle)
+                                        .tint(.green)
+                                }
+                            })
+                            .disabled(whisperState.isProcessing)
+                        }
                     }
                 }
             }

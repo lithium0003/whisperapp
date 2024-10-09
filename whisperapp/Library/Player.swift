@@ -20,14 +20,19 @@ class Player: NSObject {
     func startRecording(file: URL, callback: @escaping ([Float])-> Void) {
         if recording { return }
         recording = true
-        let asset = AVURLAsset(url: file)
         Task.detached { [weak self] in
             defer {
+                callback([])
                 self?.isLive = false
                 self?.recording = false
             }
-            guard file.startAccessingSecurityScopedResource() else { return }
-            defer { file.stopAccessingSecurityScopedResource() }
+            let accessing = file.startAccessingSecurityScopedResource()
+            defer {
+                if accessing {
+                    file.stopAccessingSecurityScopedResource()
+                }
+            }
+            let asset = AVURLAsset(url: file)
             guard let audioTrack = try? await asset.loadTracks(withMediaType: .audio).first else { return }
             guard let reader = try? AVAssetReader(asset: asset) else { return }
             let trackOutput = AVAssetReaderTrackOutput(track: audioTrack, outputSettings: [
@@ -61,8 +66,6 @@ class Player: NSObject {
                     try await Task.sleep(for: .milliseconds(20))
                 }
             }
-
-            callback([])
         }
     }
 

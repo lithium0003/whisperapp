@@ -37,7 +37,7 @@ class WhisperState: NSObject, ObservableObject {
     var gainTargetdB: Float = -5
 
     var logBuffer: [TimeKey: AttributedString] = [:]
-    
+
     @Published var bufferSec = 30
     @Published var contCount = 5
 
@@ -47,11 +47,11 @@ class WhisperState: NSObject, ObservableObject {
         }
         return ["auto"]
     }
-    
+
     private var whisperContext: WhisperContext?
     private var recorder = Recorder()
     private var player = Player()
-    
+
     private var modelUrl: URL? {
         guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             return nil
@@ -66,11 +66,11 @@ class WhisperState: NSObject, ObservableObject {
         }
         return models.appending(path: bin)
     }
-    
+
     private enum LoadError: Error {
         case couldNotLocateModel
     }
-    
+
     init(model_size: String) {
         self.model_size = model_size
         super.init()
@@ -80,12 +80,12 @@ class WhisperState: NSObject, ObservableObject {
     deinit {
         whisperContext = nil
     }
-    
+
     func purge() async {
         await whisperContext?.kill()
         whisperContext = nil
     }
-    
+
     @MainActor
     func clearLog() {
         messageLog = []
@@ -95,7 +95,7 @@ class WhisperState: NSObject, ObservableObject {
             await whisperContext?.reset()
         }
     }
-    
+
     private func loadModel() {
         Task.detached { @MainActor [self] in
             messageLog.append("Loading model...")
@@ -165,7 +165,7 @@ class WhisperState: NSObject, ObservableObject {
             }
         }
     }
-    
+
     actor Processer {
         private(set) var gain: Float = 100.0
         private let contCount: Int
@@ -177,7 +177,7 @@ class WhisperState: NSObject, ObservableObject {
         func stop() async {
             await parent.whisperContext?.stop()
         }
-        
+
         func fixGain(diff: Int) {
             if gain < 1.0, gain * pow(1.1, Float(diff)) > 1.0 {
                 gain = 1.0
@@ -189,7 +189,7 @@ class WhisperState: NSObject, ObservableObject {
                 gain *= pow(1.1, Float(diff))
             }
         }
-                
+
         class SoundBuffer {
             private var soundBuf: [Float] = []
             private var preBuffer: [Float] = []
@@ -209,29 +209,29 @@ class WhisperState: NSObject, ObservableObject {
                 self.callLength = callLength
                 self.contCount = contCount
             }
-            
+
             func done_processing(sample_count: Int) {
                 processing_samples -= sample_count
                 if processing_samples < 0 {
                     processing_samples = 0
                 }
             }
-            
+
             func get_waittime() -> Double {
                 return Double(soundBuf.count + processing_samples) / 16000
             }
-            
+
             func clear() {
                 soundBuf.removeAll()
             }
-            
+
             func append_preData(data: [Float]) {
                 preBuffer.append(contentsOf: data)
                 if preBuffer.count > preLength {
                     preBuffer.removeFirst(preBuffer.count - preLength)
                 }
             }
-            
+
             func append_data(data: [Float]) -> Int {
                 let fixData: [Float]
                 if !preBuffer.isEmpty {
@@ -244,7 +244,7 @@ class WhisperState: NSObject, ObservableObject {
                 soundBuf.append(contentsOf: fixData)
                 return fixData.count
             }
-            
+
             func read_buffer(internalLength: Int) -> (buf: [Float], flush: Bool) {
                 if soundBuf.count >= callLength {
                     let buf = soundBuf
@@ -269,7 +269,7 @@ class WhisperState: NSObject, ObservableObject {
                 }
                 return (buf: [], flush: false)
             }
-            
+
             func flush_buffer() -> [Float] {
                 let buf = soundBuf
                 soundBuf.removeAll()
@@ -342,7 +342,7 @@ class WhisperState: NSObject, ObservableObject {
             if maxAmp * gain > 1.0 {
                 gain = 1.0 / maxAmp
             }
-            
+
             let gainedData = sample.map({ $0 * gain })
             if gainedData.allSatisfy({ $0 == 0 }) {
                 parent.volLeveldB = -40
@@ -381,7 +381,7 @@ class WhisperState: NSObject, ObservableObject {
                     buffer.lastSound = Date()
                 }
             }
-            
+
             if parent.callCount == 0 {
                 let bufdata = buffer.read_buffer(internalLength: Int(parent.internalWaitTime * 16000))
                 parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
@@ -395,7 +395,7 @@ class WhisperState: NSObject, ObservableObject {
                     await callTranscribe(samples: [], transrate: parent.transrate)
                     lastCall = Date()
                 }
-                
+
                 if parent.internalWaitTime > 0, bufdata.flush {
                     while parent.internalWaitTime > 0 {
                         lastCall = Date()
@@ -422,7 +422,7 @@ class WhisperState: NSObject, ObservableObject {
             parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
             parent.logBuffer = logBuffer
         }
-        
+
         private func callTranscribe(samples: [Float], transrate: Bool) async {
             if (!parent.isModelLoaded) {
                 return
@@ -459,7 +459,7 @@ class WhisperState: NSObject, ObservableObject {
         }
     }
     var processer: Processer?
-    
+
     func toggleRecord() async -> Bool {
         if isRecording, isPlaying {
             await togglePlay(file: URL(fileURLWithPath: ""))
@@ -472,13 +472,13 @@ class WhisperState: NSObject, ObservableObject {
             active = false
             volLeveldB = -40
             volDev = 0
-            
+
             while recorder.recording {
                 try? await Task.sleep(for: .milliseconds(100))
             }
 
             await processer?.finish_process()
-            
+
             await processer?.stop()
             Task.detached { @MainActor [self] in
                 isRecording = recorder.recording
@@ -533,7 +533,7 @@ class WhisperState: NSObject, ObservableObject {
         }
         return true
     }
-    
+
     func togglePlay(file: URL) async {
         if isRecording, !isPlaying {
             _ = await toggleRecord()
@@ -549,13 +549,13 @@ class WhisperState: NSObject, ObservableObject {
             active = false
             volLeveldB = -40
             volDev = 0
-            
+
             while player.recording {
                 try? await Task.sleep(for: .milliseconds(100))
             }
 
             await processer?.finish_process()
-            
+
             await processer?.stop()
             Task.detached { @MainActor [self] in
                 isRecording = player.recording
@@ -584,6 +584,10 @@ class WhisperState: NSObject, ObservableObject {
                         
                         await processer?.stop()
                         Task.detached { @MainActor [self] in
+                            active = false
+                            volLeveldB = -40
+                            volDev = 0
+
                             isRecording = player.recording
                             processer = nil
 #if os(iOS)
