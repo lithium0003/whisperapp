@@ -19,7 +19,8 @@ class WhisperState: NSObject, ObservableObject {
     @Published var isProcessing = false
     @Published var fixLanguage = "auto"
     @Published var transrate = false
-    @Published var messageLog: [AttributedString] = []
+    @Published var messageLog: [String] = []
+    @Published var probLog: [[Double]] = []
     @Published var messageTiming: [Double] = []
     @Published var currentGain = 1.0
     @Published var timeCount = 0
@@ -36,7 +37,7 @@ class WhisperState: NSObject, ObservableObject {
     var volDevThreshold: Float = 0.9
     var gainTargetdB: Float = -5
 
-    var logBuffer: [TimeKey: AttributedString] = [:]
+    var logBuffer: [Segment] = []
 
     @Published var bufferSec = 30
     @Published var contCount = 5
@@ -102,6 +103,8 @@ class WhisperState: NSObject, ObservableObject {
     @MainActor
     func clearLog() {
         messageLog = []
+        probLog = []
+        messageTiming  = []
         timeCount = 0
         logBuffer.removeAll()
         silenceMap.removeAll()
@@ -157,11 +160,11 @@ class WhisperState: NSObject, ObservableObject {
                 do {
                     for try await log in redirector {
                         Task.detached { @MainActor [self] in
-                            messageLog.append(contentsOf: log.split(whereSeparator: \.isNewline).map({ AttributedString($0) }))
+                            messageLog.append(contentsOf: log.split(whereSeparator: \.isNewline).map({ String($0) }))
                         }
                     }
                     Task.detached { @MainActor [self] in
-                        messageLog.append(AttributedString("Loaded model \(modelUrl.lastPathComponent)"))
+                        messageLog.append("Loaded model \(modelUrl.lastPathComponent)")
                         messageLog.append(contentsOf: ["", "Ready to run.", ""])
                     }
                     Task.detached { @MainActor in
@@ -186,7 +189,6 @@ class WhisperState: NSObject, ObservableObject {
         private var scount: Int
         private var lastCall = Date()
         private var remainCall = Date()
-        private var logBuffer: [TimeKey: AttributedString] = [:]
 
         func stop() async {
             await parent.whisperContext?.clear()
@@ -287,7 +289,6 @@ class WhisperState: NSObject, ObservableObject {
             self.contCount = parent.contCount
             self.buffer = SoundBuffer(callLength: 16000 * parent.bufferSec, contCount: contCount)
             self.scount = contCount
-            self.logBuffer = parent.logBuffer
         }
 
         let fft_n = 512
@@ -396,7 +397,13 @@ class WhisperState: NSObject, ObservableObject {
                 }
             }
 
-            if parent.callCount == 0 {
+            #if os(iOS)
+            let foreground = await UIApplication.shared.applicationState != .background
+            #else
+            let foreground = true
+            #endif
+
+            if foreground, parent.callCount == 0 {
                 let bufdata = buffer.read_buffer(internalLength: Int(parent.internalWaitTime * 16000))
                 parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
                 if !bufdata.buf.isEmpty {
@@ -434,7 +441,6 @@ class WhisperState: NSObject, ObservableObject {
             }
             await parent.whisperContext?.clear()
             parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
-            parent.logBuffer = logBuffer
         }
 
         private func callTranscribe(samples: [Float], transrate: Bool) async {
@@ -454,20 +460,15 @@ class WhisperState: NSObject, ObservableObject {
             let txt = await whisperContext.fullTranscribe(samples: samples, fixlang: parent.fixLanguage, transrate: transrate, language_thold: Float(parent.languageCutoff), lang_callback: { lang in
                 self.parent.language = lang
             })
-            if !txt.isEmpty {
-                logBuffer = logBuffer.merging(txt) { $1 }
-                let keys = filterTimeKey(Array(logBuffer.keys))
-                logBuffer = logBuffer.filter({ keys.contains($0.key) })
-            }
             guard await whisperContext.isLive else { return }
             buffer.done_processing(sample_count: samples.count)
             parent.internalWaitTime = await Double(whisperContext.waitTime) / 16000
             if !txt.isEmpty {
                 Task.detached { @MainActor [self] in
-                    let buf = await logBuffer
-                    let v = buf.keys.sorted(by: { $0.start < $1.start }).map({ (buf[$0]!, Double($0.start) / 16000) })
+                    let v = txt.sorted(by: { $0.time.start < $1.time.start }).map({ ($0.text, $0.probability, Double($0.time.start) / 16000) })
                     parent.messageLog = v.map(\.0)
-                    parent.messageTiming = v.map(\.1).map(parent.fixTimestamp)
+                    parent.probLog = v.map(\.1)
+                    parent.messageTiming = v.map(\.2).map(parent.fixTimestamp)
                 }
             }
         }

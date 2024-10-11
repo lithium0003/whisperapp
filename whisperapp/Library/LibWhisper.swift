@@ -32,48 +32,54 @@ struct TimeKey: Hashable {
     }
 }
 
-func filterTimeKey(_ keys: [TimeKey]) -> [TimeKey] {
+struct Segment {
+    let time: TimeKey
+    let text: String
+    let probability: [Double]
+}
+
+func filterTimeKey(_ keys: [Segment]) -> [Segment] {
     let overlap = keys.map({ a in
-        let o = keys.filter({ $0 != a }).filter({ b in
-            a.start <= b.stop && a.stop >= b.start
+        let o = keys.filter({ $0.time != a.time }).filter({ b in
+            a.time.start <= b.time.stop && a.time.stop >= b.time.start
         })
         if o.isEmpty { return (value: 0.0, total: 0.0) }
-        let overlap = o.map({ min(a.stop, $0.stop) - max(a.start, $0.start) })
-        let total = o.map({ $0.stop - $0.start })
+        let overlap = o.map({ min(a.time.stop, $0.time.stop) - max(a.time.start, $0.time.start) })
+        let total = o.map({ $0.time.stop - $0.time.start })
         let ratio = zip(overlap, total).map({ Double(max(0, $0)) / Double($1) })
-        return (value: zip(o, ratio).reduce(0.0, { $0 + pow(10, $1.0.logProbSum / Double($1.0.tokenCount)) * $1.1 }), total: overlap.reduce(0.0, { $0 + Double($1) / 16000 }))
+        return (value: zip(o, ratio).reduce(0.0, { $0 + pow(10, $1.0.time.logProbSum / Double($1.0.time.tokenCount)) * $1.1 }), total: overlap.reduce(0.0, { $0 + Double($1) / 16000 }))
     })
     let winKeys = zip(keys, overlap).sorted(by: { (arg0, arg1) in
         let (a0, a1) = arg0
         let (b0, b1) = arg1
-        let at = Double(a0.stop - a0.start) / 16000
-        let bt = Double(b0.stop - b0.start) / 16000
-        let alen = Double(a0.tokenCount) / Double(a0.tokenCount + b0.tokenCount)
-        let blen = Double(b0.tokenCount) / Double(a0.tokenCount + b0.tokenCount)
-        let a = (pow(10, a0.logProbSum / Double(a0.tokenCount)) * at - a1.value * a1.total) / (at + a1.total) * alen
-        let b = (pow(10, b0.logProbSum / Double(b0.tokenCount)) * bt - b1.value * b1.total) / (bt + b1.total) * blen
+        let at = Double(a0.time.stop - a0.time.start) / 16000
+        let bt = Double(b0.time.stop - b0.time.start) / 16000
+        let alen = Double(a0.time.tokenCount) / Double(a0.time.tokenCount + b0.time.tokenCount)
+        let blen = Double(b0.time.tokenCount) / Double(a0.time.tokenCount + b0.time.tokenCount)
+        let a = (pow(10, a0.time.logProbSum / Double(a0.time.tokenCount)) * at - a1.value * a1.total) / (at + a1.total) * alen
+        let b = (pow(10, b0.time.logProbSum / Double(b0.time.tokenCount)) * bt - b1.value * b1.total) / (bt + b1.total) * blen
         return a > b }).map(\.0)
-    var winner: [TimeKey] = []
+    var winner: [Segment] = []
     for a in winKeys {
         if winner.isEmpty {
             winner.append(a)
             continue
         }
-        if winner.contains(where: { a.start <= $0.stop - 1600 * 1 && a.stop >= $0.start + 1600 * 1 }) {
+        if winner.contains(where: { a.time.start <= $0.time.stop && a.time.stop >= $0.time.start }) {
             continue
         }
         winner.append(a)
     }
-    return winner.sorted(by: { $0.start < $1.start })
+    return winner.sorted(by: { $0.time.start < $1.time.start })
 }
 
-func margeTimeKeys(_ keys1: [TimeKey], _ keys2: [TimeKey]) -> [TimeKey] {
-    var keys: [TimeKey] = []
-    var needMergeKeys: [TimeKey] = []
+func margeTimeKeys(_ keys1: [Segment], _ keys2: [Segment]) -> [Segment] {
+    var keys: [Segment] = []
+    var needMergeKeys: [Segment] = []
     for a in keys1 {
         var pass = true
         for b in keys2 {
-            if a.start > b.stop || a.stop < b.start {
+            if a.time.start > b.time.stop || a.time.stop < b.time.start {
                 continue
             }
             pass = false
@@ -89,7 +95,7 @@ func margeTimeKeys(_ keys1: [TimeKey], _ keys2: [TimeKey]) -> [TimeKey] {
     for a in keys2 {
         var pass = true
         for b in keys1 {
-            if a.start > b.stop || a.stop < b.start {
+            if a.time.start > b.time.stop || a.time.stop < b.time.start {
                 continue
             }
             pass = false
@@ -103,7 +109,7 @@ func margeTimeKeys(_ keys1: [TimeKey], _ keys2: [TimeKey]) -> [TimeKey] {
         }
     }
     
-    return (keys + filterTimeKey(needMergeKeys)).sorted(by: { $0.start < $1.start })
+    return (keys + filterTimeKey(needMergeKeys)).sorted(by: { $0.time.start < $1.time.start })
 }
 
 // Meet Whisper C++ constraint: Don't access from more than one thread at a time.
@@ -145,7 +151,7 @@ actor WhisperContext {
     private var backPoint = 0
     private var backWav = [Float]()
     private var processPoint = 0
-    private var lastSegmentLog = [TimeKey]()
+    private var lastSegmentLog = [Segment]()
     var waitTime: Int {
         (backWav.lastIndex(where: { $0 != 0 }) ?? 0) + backPoint - processPoint
     }
@@ -162,10 +168,11 @@ actor WhisperContext {
     func reset() {
         backPoint = 0
         processPoint = 0
+        lastSegmentLog.removeAll()
     }
     
-    func fullTranscribe(samples: [Float], fixlang: String = "auto", transrate: Bool = false, language_thold: Float, lang_callback: ((String)->Void)?) -> [TimeKey: AttributedString] {
-        var result: [TimeKey: AttributedString] = [:]
+    func fullTranscribe(samples: [Float], fixlang: String = "auto", transrate: Bool = false, language_thold: Float, lang_callback: ((String)->Void)?) -> [Segment] {
+        var result: [Segment] = []
         let hallucinationPatch = !transrate
         guard isLive else {
             lang_callback?("")
@@ -260,7 +267,6 @@ actor WhisperContext {
         }
         let n_segments = whisper_full_n_segments(context)
         var all_probs: [Double] = []
-        var segmentLog = [TimeKey]()
         for i in 0..<n_segments {
             let n_tokens = whisper_full_n_tokens(context, i)
             let t0 = whisper_full_get_segment_t0(context, i)
@@ -275,21 +281,25 @@ actor WhisperContext {
             }
             var sound_t0 = Int(t0) * 160 + backPoint
             var sound_t1 = Int(t1) * 160 + backPoint
-            
-            var attrStr = AttributedString(stringLiteral: str)
-            attrStr.backgroundColor = .black
+
             let punctuation = "\"'“¿([{-\"'.。,，!！?？:：”)]}、"
             let idx = str.map({ String($0).utf8.count }).publisher.scan(0, +).sequence
+            let isPunctuation = str.map({ punctuation.contains($0) })
+            var strProb = [Double](repeating: 0, count: idx.count)
             var valid = true
             var t_tw: [Int] = []
             var probs: [Double] = []
-            var isPunctuation: [Bool] = []
+            var tidx: [Int] = []
+            var istPunctuation = [Bool](repeating: false, count: Int(n_tokens))
             var sumprob = 0.0
             var logsumprob = 0.0
             var c = 0
             for j in 0..<n_tokens {
-                let p = Double(whisper_full_get_token_p(context, i, j))
                 let tkn = whisper_full_get_token_data(context, i, j)
+                if tkn.id >= whisper_token_beg(context) {
+                    continue
+                }
+                let p = Double(tkn.p)
                 let tw = tkn.t_dtw
                 probs.append(p)
                 if tw >= 0 {
@@ -300,30 +310,43 @@ actor WhisperContext {
                 }
                 if let t = whisper_full_get_token_text(context, i, j) {
                     let count = strlen(t)
-                    let s = idx.firstIndex(where: { $0 >= c }) ?? str.count - 1
-                    let e = idx.firstIndex(where: { $0 > c+count }) ?? str.count
-                    
-                    let startIdx = attrStr.index(attrStr.startIndex, offsetByCharacters: s)
-                    let endIdx = attrStr.index(attrStr.startIndex, offsetByCharacters: e)
-                    attrStr[startIdx..<endIdx].foregroundColor = Color(red: 1, green: p, blue: 1)
                     c += count
-                    
-                    let startIdx2 = str.index(str.startIndex, offsetBy: s)
-                    let endIdx2 = str.index(str.startIndex, offsetBy: e)
-
-                    if punctuation.unicodeScalars.contains(str[startIdx2..<endIdx2].unicodeScalars) {
-                        isPunctuation.append(true)
+                    tidx.append(c)
+                }
+            }
+            c = 0
+            for j in idx.enumerated() {
+                let s = tidx.firstIndex(where: { $0 > j.element }) ?? tidx.count
+                if isPunctuation[j.offset] {
+                    for k in c..<s {
+                        istPunctuation[k] = true
                     }
-                    else {
-                        isPunctuation.append(false)
-                    }
+                }
+                c = s
+            }
+            let idxPair = (0..<(idx.max() ?? 0)).map({ c in
+                let s1 = idx.firstIndex(where: { $0 > c }) ?? idx.count
+                let s2 = tidx.firstIndex(where: { $0 > c }) ?? tidx.count
+                return (s1, Set([s2]))
+            })
+            let txtToTokenDict = Dictionary(idxPair, uniquingKeysWith: { $0.union($1) })
+            for (j1, j2) in txtToTokenDict {
+                var psum = 0.0
+                var count = 0.0
+                for k in j2 {
+                    psum += log10(probs[k])
+                    count += 1
+                }
+                print(psum,count)
+                if count > 0 {
+                    strProb[j1] = pow(10, psum / count)
                 }
             }
             if hallucinationPatch {
                 if t_tw.count > 1 {
                     var score = 0.0
                     var count = 0
-                    for ((s,p),(tw0,tw1)) in zip(zip(isPunctuation,probs), zip(t_tw, t_tw.dropFirst())) {
+                    for ((s,p),(tw0,tw1)) in zip(zip(istPunctuation,probs), zip(t_tw, t_tw.dropFirst())) {
                         if s {
                             continue
                         }
@@ -406,8 +429,8 @@ actor WhisperContext {
                 print("skip")
                 continue
             }
-            result[.init(start: sound_t0, stop: sound_t1, logProbSum: logsumprob, tokenCount: probs.count)] = attrStr
-            segmentLog.append(.init(start: sound_t0, stop: sound_t1, logProbSum: logsumprob, tokenCount: probs.count))
+            let s = Segment(time: TimeKey(start: sound_t0, stop: sound_t1, logProbSum: logsumprob, tokenCount: probs.count), text: str, probability: strProb)
+            result.append(s)
             if !probs.isEmpty {
                 all_probs.append(contentsOf: probs)
             }
@@ -419,11 +442,10 @@ actor WhisperContext {
             if lowProbCount > (all_probs.count + 2) / 3, sumprob < segmentProbThold {
                 print("ignore")
                 result.removeAll()
-                segmentLog.removeAll()
             }
         }
-        lastSegmentLog = margeTimeKeys(segmentLog, lastSegmentLog)
-        if let lastStop = lastSegmentLog.last(where: { $0.start < backPoint + 16000 * 25 })?.stop {
+        lastSegmentLog = margeTimeKeys(result, lastSegmentLog)
+        if let lastStop = lastSegmentLog.last(where: { $0.time.start < backPoint + 16000 * 25 })?.time.stop {
             processPoint = lastStop
         }
         
@@ -433,11 +455,11 @@ actor WhisperContext {
         }
         
         if !samples.isEmpty {
-            if let bt1 = lastSegmentLog.first(where: { $0.start < backPoint + shift && $0.stop > backPoint + shift }) {
-                shift = bt1.stop + 160 * 15 - backPoint
+            if let bt1 = lastSegmentLog.first(where: { $0.time.start < backPoint + shift && $0.time.stop > backPoint + shift }) {
+                shift = bt1.time.stop + 160 * 15 - backPoint
             }
-            else if let bt2 = lastSegmentLog.filter({ $0.start > backPoint }).last(where: { $0.start < backPoint + shift }) {
-                shift = bt2.stop + 160 * 15 - backPoint
+            else if let bt2 = lastSegmentLog.filter({ $0.time.start > backPoint }).last(where: { $0.time.start < backPoint + shift }) {
+                shift = bt2.time.stop + 160 * 15 - backPoint
             }
         }
 
@@ -465,7 +487,7 @@ actor WhisperContext {
             lang_callback?("")
         }
         print(Double(backPoint) / 16000, Double(processPoint) / 16000)
-        return result
+        return lastSegmentLog
     }
 
     static func createContext(path: String, model: String) throws -> WhisperContext {

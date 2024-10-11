@@ -43,6 +43,7 @@ struct ContentView: View {
     @State private var showingAlert = false
     @State private var importerPresented = false
     @State private var isDragging = false
+    @State private var autoScroll = true
 
     @AppStorage("silentLevel") var silentLeveldB = -20.0
     @AppStorage("gainTargetLevel") var gainTargetdB = 0.0
@@ -69,9 +70,6 @@ struct ContentView: View {
     @State var logLines = 0
     var backColor: Color? {
         if colorP {
-            if colorScheme == .light {
-                return Color(white: 0.75)
-            }
         }
         return nil
     }
@@ -233,6 +231,19 @@ struct ContentView: View {
         }
     }
     
+    func colorText(str: String, prob: [Double]) -> AttributedString {
+        var result = AttributedString(stringLiteral: str)
+        for p in prob.enumerated() {
+            if colorScheme == .light {
+                result[result.index(result.startIndex, offsetByCharacters: p.offset)..<result.index(result.startIndex, offsetByCharacters: p.offset+1)].backgroundColor = Color(red: 1, green: 0, blue: 0, opacity: 1 - p.element)
+            }
+            else {
+                result[result.index(result.startIndex, offsetByCharacters: p.offset)..<result.index(result.startIndex, offsetByCharacters: p.offset+1)].foregroundColor = Color(red: 1, green: p.element, blue: p.element)
+            }
+        }
+        return result
+    }
+
     var body: some View {
         VStack {
             if whisperState.isModelLoaded {
@@ -266,6 +277,19 @@ struct ContentView: View {
                         Text(String(localized: String.LocalizationValue(detectLanguage)))
                     }
                     .foregroundStyle(callCount == 0 ? .primary: Color.blue)
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            autoScroll.toggle()
+                        }, label: {
+                            if autoScroll {
+                                Image(systemName: "play.slash.fill")
+                            }
+                            else {
+                                Image(systemName: "arrow.down.to.line")
+                            }
+                        })
+                    }
                 }
             }
             ScrollViewReader { reader in
@@ -278,14 +302,14 @@ struct ContentView: View {
                                         Text(tstr)
                                             .font(.body.monospacedDigit())
                                     }
-                                    Text(whisperState.messageLog[i])
+                                    Text(colorText(str: whisperState.messageLog[i], prob:  i < whisperState.probLog.count ? whisperState.probLog[i] : []))
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .onTapGesture{}
                                         .onLongPressGesture(minimumDuration: 0.5) {
                                             if whisperState.isRecording {
                                                 return
                                             }
-                                            let resultText = whisperState.messageLog.map({ String($0.characters) }).joined(separator: "\n")
+                                            let resultText = whisperState.messageLog.joined(separator: "\n")
                                             userData.presentedPage.append(.edit(text: resultText))
                                         }
                                 }
@@ -296,14 +320,14 @@ struct ContentView: View {
                                         Text(tstr)
                                             .font(.body.monospacedDigit())
                                     }
-                                    Text(String(whisperState.messageLog[i].characters))
+                                    Text(String(whisperState.messageLog[i]))
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .onTapGesture{}
                                         .onLongPressGesture(minimumDuration: 0.5) {
                                             if whisperState.isRecording {
                                                 return
                                             }
-                                            let resultText = whisperState.messageLog.map({ String($0.characters) }).joined(separator: "\n")
+                                            let resultText = whisperState.messageLog.joined(separator: "\n")
                                             userData.presentedPage.append(.edit(text: resultText))
                                         }
                                 }
@@ -315,7 +339,9 @@ struct ContentView: View {
                     }
                 }
                 .onChange(of: whisperState.messageLog.count) { oldValue, newValue in
-                    reader.scrollTo(-1)
+                    if autoScroll {
+                        reader.scrollTo(-1)
+                    }
                 }
             }
             if whisperState.isModelLoaded {
@@ -417,7 +443,6 @@ struct ContentView: View {
             }
         }
         .padding()
-        .background(backColor)
         .overlayPreferenceValue(BoundsPreferenceKey.self) { value in
             GeometryReader { proxy in
                 if let preference = value.first {
@@ -445,8 +470,8 @@ struct ContentView: View {
             if newValue {
                 Task.detached { @MainActor in
                     whisperState.messageLog = [
-                        AttributedString(String(localized: "Ready to start.")),
-                        AttributedString(String(localized: "LogPress to export log.")),
+                        String(localized: "Ready to start."),
+                        String(localized: "LogPress to export log."),
                     ]
                     if tutorial == 0 {
                         spotlighting = true
