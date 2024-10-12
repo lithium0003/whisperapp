@@ -358,8 +358,8 @@ actor WhisperContext {
                 c = s
             }
             let idxPair = (0..<(idx.max() ?? 0)).map({ c in
-                let s1 = idx.firstIndex(where: { $0 > c }) ?? idx.count
-                let s2 = tidx.firstIndex(where: { $0 > c }) ?? tidx.count
+                let s1 = idx.firstIndex(where: { $0 > c }) ?? idx.count - 1
+                let s2 = tidx.firstIndex(where: { $0 > c }) ?? tidx.count - 1
                 return (s1, Set([s2]))
             })
             let txtToTokenDict = Dictionary(idxPair, uniquingKeysWith: { $0.union($1) })
