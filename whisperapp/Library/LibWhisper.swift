@@ -52,7 +52,7 @@ func filterTimeKey(_ keys: [Segment]) -> [Segment] {
             winner.append(a)
             continue
         }
-        if winner.contains(where: { min(a.time.stop, $0.time.stop) - max(a.time.start, $0.time.start) > min(1600 * 1, min(a.time.stop - a.time.start, $0.time.stop - $0.time.start) / 3) }) {
+        if winner.contains(where: { min(a.time.stop, $0.time.stop) - max(a.time.start, $0.time.start) >= 0 }) {
             continue
         }
         winner.append(a)
