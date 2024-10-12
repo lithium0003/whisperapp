@@ -19,17 +19,6 @@ struct TimeKey: Hashable {
     let stop: Int
     let logProbSum: Double
     let tokenCount: Int
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(self.start)
-        hasher.combine(self.stop)
-        hasher.combine(self.logProbSum)
-        hasher.combine(self.tokenCount)
-    }
-
-    static func ==(lhs: TimeKey, rhs: TimeKey) -> Bool {
-        return lhs.start == rhs.start && lhs.stop == rhs.stop && lhs.logProbSum == rhs.logProbSum && lhs.tokenCount == rhs.tokenCount
-    }
 }
 
 struct Segment {
@@ -54,10 +43,8 @@ func filterTimeKey(_ keys: [Segment]) -> [Segment] {
         let (b0, b1) = arg1
         let at = Double(a0.time.stop - a0.time.start) / 16000
         let bt = Double(b0.time.stop - b0.time.start) / 16000
-        let alen = Double(a0.time.tokenCount) / Double(a0.time.tokenCount + b0.time.tokenCount)
-        let blen = Double(b0.time.tokenCount) / Double(a0.time.tokenCount + b0.time.tokenCount)
-        let a = (pow(10, a0.time.logProbSum / Double(a0.time.tokenCount)) * at - a1.value * a1.total) / (at + a1.total) * alen
-        let b = (pow(10, b0.time.logProbSum / Double(b0.time.tokenCount)) * bt - b1.value * b1.total) / (bt + b1.total) * blen
+        let a = (pow(10, a0.time.logProbSum / Double(a0.time.tokenCount)) * at - a1.value * a1.total) / (at + a1.total)
+        let b = (pow(10, b0.time.logProbSum / Double(b0.time.tokenCount)) * bt - b1.value * b1.total) / (bt + b1.total)
         return a > b }).map(\.0)
     var winner: [Segment] = []
     for a in winKeys {
@@ -65,7 +52,7 @@ func filterTimeKey(_ keys: [Segment]) -> [Segment] {
             winner.append(a)
             continue
         }
-        if winner.contains(where: { a.time.start <= $0.time.stop && a.time.stop >= $0.time.start }) {
+        if winner.contains(where: { min(a.time.stop, $0.time.stop) - max(a.time.start, $0.time.start) > min(1600 * 1, min(a.time.stop - a.time.start, $0.time.stop - $0.time.start) / 3) }) {
             continue
         }
         winner.append(a)
@@ -157,21 +144,19 @@ actor WhisperContext {
     }
     
     func clear() {
-        backPoint += backWav.lastIndex(where: { $0 != 0 }) ?? 0
-        if backPoint < 0 {
-            backPoint = 0
-        }
+        backPoint = 0
+        processPoint = 0
         backWav = []
-        processPoint = backPoint
     }
 
     func reset() {
         backPoint = 0
         processPoint = 0
+        backWav = []
         lastSegmentLog.removeAll()
     }
     
-    func fullTranscribe(samples: [Float], fixlang: String = "auto", transrate: Bool = false, language_thold: Float, lang_callback: ((String)->Void)?) -> [Segment] {
+    func fullTranscribe(samples: [Float], globalCount: Int, fixlang: String = "auto", transrate: Bool = false, language_thold: Float, lang_callback: ((String)->Void)?) -> [Segment] {
         var result: [Segment] = []
         let hallucinationPatch = !transrate
         guard isLive else {
@@ -184,9 +169,56 @@ actor WhisperContext {
         }
 
         backWav += samples
+        if !samples.isEmpty {
+            backPoint = globalCount - backWav.count
+        }
         if backWav.isEmpty {
             return result
         }
+
+//        print(lastSegmentLog)
+//        print(backWav.count, backPoint, processPoint, globalCount, samples.count)
+
+        if let bt1 = lastSegmentLog.filter({ $0.time.start > backPoint }).last(where: { $0.time.stop < backPoint + backWav.count - max(16000 * 15, samples.count) }) {
+            let shift = bt1.time.start - 1600 * 2 - backPoint
+//            print("bt1", shift, bt1.time.start, bt1.time.stop, bt1.text)
+            if shift > 0 {
+                if shift < backWav.count {
+                    backPoint += shift
+                    backWav.removeFirst(shift)
+                }
+                else {
+                    backPoint += backWav.count
+                    backWav.removeAll()
+                }
+            }
+        }
+
+        if backWav.last == 0 || backWav.count - samples.count >= 16000 * 28 {
+            let shift = samples.isEmpty ? 16000 * 15 : min(samples.count, 16000 * 15)
+//            print("shift", shift)
+            if shift > 0 {
+                let count = backWav.lastIndex(where: { $0 != 0 }) ?? backWav.count
+                if shift < count {
+                    backPoint += shift
+                    backWav.removeFirst(shift)
+                }
+                else {
+                    backPoint += count
+                    backWav.removeAll()
+                }
+            }
+        }
+//        print(backPoint, processPoint)
+
+        if processPoint < backPoint {
+            processPoint = backPoint
+        }
+
+        if backWav.isEmpty {
+            return result
+        }
+
         let padlen = 16000 * 28 - backWav.count
         if padlen > 0 {
             if samples.isEmpty {
@@ -240,9 +272,9 @@ actor WhisperContext {
         let lang_id = whisper_full_lang_id(context)
         if lang_id < 0 {
             lang_callback?("(no voice)")
-            var shift = samples.isEmpty ? 16000 * 10 : 0
-            if backWav.count > 16000 * 60 {
-                shift += 16000 * 15
+            var shift = 16000 * 15
+            if backWav.count > 16000 * 30 {
+                shift = 16000 * 25
             }
 
             if shift > 0 {
@@ -276,7 +308,8 @@ actor WhisperContext {
             if t0 > t_end - 100 {
                 break
             }
-            if t1 > t_end {
+            // if last segment touch the end, skip it
+            if t1 >= t_end {
                 break
             }
             var sound_t0 = Int(t0) * 160 + backPoint
@@ -337,16 +370,17 @@ actor WhisperContext {
                     psum += log10(probs[k])
                     count += 1
                 }
-                print(psum,count)
                 if count > 0 {
                     strProb[j1] = pow(10, psum / count)
                 }
             }
             if hallucinationPatch {
                 if t_tw.count > 1 {
+                    // drop first token because sometimes time is not accurate
+                    let drop = t_tw.count > 2 ? 1 : 0
                     var score = 0.0
                     var count = 0
-                    for ((s,p),(tw0,tw1)) in zip(zip(istPunctuation,probs), zip(t_tw, t_tw.dropFirst())) {
+                    for ((s,p),(tw0,tw1)) in zip(zip(istPunctuation,probs), zip(t_tw.dropFirst(drop), t_tw.dropFirst(drop+1))) {
                         if s {
                             continue
                         }
@@ -361,8 +395,9 @@ actor WhisperContext {
                         if p < 0.15 {
                             score += 1.0
                         }
-                        if duration < 0.0666 {
-                            score += (0.0666 - duration) * 30
+                        // shorten duration because token level but word level
+                        if duration < 0.044 {
+                            score += (0.044 - duration) * 45
                         }
                         if duration > 2.0 {
                             score += duration - 2.0
@@ -372,7 +407,7 @@ actor WhisperContext {
                             break
                         }
                     }
-                    if score >= 3 || score + 0.01 >= Double(count) {
+                    if score >= 6 || score + 0.01 >= Double(count) {
                         valid = false
                     }
                     print(valid, score, str)
@@ -383,8 +418,8 @@ actor WhisperContext {
                     if p < 0.15 {
                         score += 1.0
                     }
-                    if duration < 0.0666 {
-                        score += (0.0666 - duration) * 30
+                    if duration < 0.133 {
+                        score += (0.133 - duration) * 15
                     }
                     if duration > 2.0 {
                         score += duration - 2.0
@@ -411,7 +446,7 @@ actor WhisperContext {
                 if let t_min = t_tw.first, t_min > t1 || t_min < t0 - 300 {
                     valid = false
                 }
-                if let t_max = t_tw.last, t_max < t0 || t_max > t_end + 100 || t_max > t1 + 300 {
+                if let t_max = t_tw.last, t_max < t0 || t_max >= t_end || t_max > t1 + 300 {
                     valid = false
                 }
             }
@@ -420,15 +455,16 @@ actor WhisperContext {
                 continue
             }
             print(t_tw)
-            if !t_tw.isEmpty {
+            if t_tw.count > 1 {
                 sound_t0 = t_tw.first! * 160 + backPoint
                 sound_t1 = t_tw.last! * 160 + backPoint
             }
             print(sumprob,sound_t0,sound_t1,str)
-            if sound_t0 < 0 || sound_t1 < 0 {
+            if sound_t0 < 0 && sound_t1 < 0 {
                 print("skip")
                 continue
             }
+            sound_t0 = max(0, sound_t0)
             let s = Segment(time: TimeKey(start: sound_t0, stop: sound_t1, logProbSum: logsumprob, tokenCount: probs.count), text: str, probability: strProb)
             result.append(s)
             if !probs.isEmpty {
@@ -444,48 +480,21 @@ actor WhisperContext {
                 result.removeAll()
             }
         }
-        lastSegmentLog = margeTimeKeys(result, lastSegmentLog)
-        if let lastStop = lastSegmentLog.last(where: { $0.time.start < backPoint + 16000 * 25 })?.time.stop {
-            processPoint = lastStop
-        }
-        
-        var shift = samples.isEmpty ? 16000 * 10 : samples.count
-        if backWav.count - shift > 16000 * 60 {
-            shift += 16000 * 15
-        }
-        
-        if !samples.isEmpty {
-            if let bt1 = lastSegmentLog.first(where: { $0.time.start < backPoint + shift && $0.time.stop > backPoint + shift }) {
-                shift = bt1.time.stop + 160 * 15 - backPoint
-            }
-            else if let bt2 = lastSegmentLog.filter({ $0.time.start > backPoint }).last(where: { $0.time.start < backPoint + shift }) {
-                shift = bt2.time.stop + 160 * 15 - backPoint
-            }
-        }
 
-        if shift > 0 {
-            if samples.isEmpty, padlen > 0, shift > padlen {
-                backPoint += backWav.count - padlen
-                backWav.removeAll()
-            }
-            else {
-                if shift < backWav.count {
-                    backPoint += shift
-                    backWav.removeFirst(shift)
-                }
-                else {
-                    backPoint += backWav.count
-                    backWav.removeAll()
-                }
-            }
+        lastSegmentLog = margeTimeKeys(result, lastSegmentLog)
+        if let lastStop = lastSegmentLog.last?.time.stop {
+            processPoint = lastStop
         }
 
         if processPoint < backPoint {
             processPoint = backPoint
         }
+
         if result.isEmpty {
             lang_callback?("")
+            return result
         }
+
         print(Double(backPoint) / 16000, Double(processPoint) / 16000)
         return lastSegmentLog
     }

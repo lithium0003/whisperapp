@@ -65,7 +65,8 @@ class Player: NSObject {
                     callback(Array(outputBuf[0..<(160 * 20)]))
                     outputBuf.removeFirst(160 * 20)
                     if needToSleep {
-                        try await Task.sleep(for: .milliseconds(200))
+                        // x2
+                        try await Task.sleep(for: .milliseconds(100))
                     }
                     else {
                         try await Task.sleep(for: .milliseconds(1))

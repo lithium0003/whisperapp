@@ -42,19 +42,6 @@ class WhisperState: NSObject, ObservableObject {
     @Published var bufferSec = 30
     @Published var contCount = 5
 
-    var silenceMap: [Double: Double] = [:]
-    func fixTimestamp(_ t: Double) -> Double {
-        var silence = 0.0
-        for (key, value) in silenceMap.sorted(by: { $0.key < $1.key }) {
-            if t + value < key {
-                return t + silence
-            }
-            silence += value
-        }
-        return t + silence
-    }
-    
-    
     var languageList: [String] {
         if let list = whisperContext?.languageList {
             return ["auto"] + list
@@ -107,7 +94,6 @@ class WhisperState: NSObject, ObservableObject {
         messageTiming  = []
         timeCount = 0
         logBuffer.removeAll()
-        silenceMap.removeAll()
         Task {
             await whisperContext?.reset()
         }
@@ -231,10 +217,6 @@ class WhisperState: NSObject, ObservableObject {
 
             func append_preData(data: [Float]) {
                 preBuffer.append(contentsOf: data)
-                let rmLength = preBuffer.count - preLength
-                if rmLength > 0 {
-                    preBuffer.removeFirst(rmLength)
-                }
             }
 
             func append_data(data: [Float]) {
@@ -249,36 +231,42 @@ class WhisperState: NSObject, ObservableObject {
                 soundBuf.append(contentsOf: fixData)
             }
 
-            func read_buffer(internalLength: Int) -> (buf: [Float], flush: Bool) {
+            func read_buffer(internalLength: Int) -> (buf: [Float], offset: Int, flush: Bool) {
                 if soundBuf.count >= callLength {
-                    let buf = soundBuf
-                    soundBuf.removeAll()
+                    let n = min(soundBuf.count, 16000 * 25)
+                    let buf = Array(soundBuf[0..<n])
+                    soundBuf.removeFirst(n)
+                    let offset = soundBuf.count
                     processing_samples += buf.count
-                    return (buf: buf, flush: false)
+                    return (buf: buf, offset: offset, flush: false)
                 }
                 if soundBuf.count > 16000 * 5, soundBuf.count + internalLength > callLength {
                     let buf = soundBuf
                     soundBuf.removeAll()
                     processing_samples += buf.count
-                    return (buf: buf, flush: false)
+                    return (buf: buf, offset: 0, flush: false)
                 }
                 else if lastSound.timeIntervalSinceNow < -5 {
                     let buf = soundBuf
+                    let offset = preBuffer.count
                     soundBuf.removeAll()
+                    preBuffer.removeAll()
                     if !buf.isEmpty {
                         processing_samples += buf.count
-                        return (buf: buf, flush: true)
+                        return (buf: buf, offset: offset, flush: true)
                     }
-                    return (buf: [], flush: false)
+                    return (buf: [], offset: offset, flush: false)
                 }
-                return (buf: [], flush: false)
+                return (buf: [], offset: 0, flush: false)
             }
 
-            func flush_buffer() -> [Float] {
+            func flush_buffer() -> (buf: [Float], offset: Int) {
                 let buf = soundBuf
+                let offset = preBuffer.count
                 soundBuf.removeAll()
+                preBuffer.removeAll()
                 processing_samples += buf.count
-                return buf
+                return (buf: buf, offset: offset)
             }
         }
         private var buffer: SoundBuffer
@@ -371,30 +359,9 @@ class WhisperState: NSObject, ObservableObject {
             }
             parent.active = scount < contCount
 
-            Task.detached { @MainActor in
+            let globalCount = self.parent.timeCount
+            Task { @MainActor in
                 self.parent.timeCount += gainedData.count
-            }
-
-            if parent.active {
-                buffer.append_data(data: gainedData)
-                buffer.lastSound = Date()
-            }
-            else {
-                buffer.append_preData(data: gainedData)
-                if scount < contCount {
-                    buffer.lastSound = Date()
-                }
-                else if scount == contCount {
-                    parent.silenceMap[Double(parent.timeCount) / 16000] = Double(gainedData.count) / 16000
-                }
-                else {
-                    if let lastSilence = parent.silenceMap.keys.sorted().last {
-                        parent.silenceMap[lastSilence]! += Double(gainedData.count) / 16000
-                    }
-                    else {
-                        parent.silenceMap[Double(parent.timeCount) / 16000] = Double(gainedData.count) / 16000
-                    }
-                }
             }
 
             #if os(iOS)
@@ -403,24 +370,35 @@ class WhisperState: NSObject, ObservableObject {
             let foreground = true
             #endif
 
+            if !foreground || parent.active {
+                buffer.append_data(data: gainedData)
+                buffer.lastSound = Date()
+            }
+            else {
+                buffer.append_preData(data: gainedData)
+                if scount < contCount {
+                    buffer.lastSound = Date()
+                }
+            }
+
             if foreground, parent.callCount == 0 {
                 let bufdata = buffer.read_buffer(internalLength: Int(parent.internalWaitTime * 16000))
                 parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
                 if !bufdata.buf.isEmpty {
                     lastCall = Date()
-                    await callTranscribe(samples: bufdata.buf, transrate: parent.transrate)
+                    await callTranscribe(samples: bufdata.buf, globalCount: globalCount - bufdata.offset, transrate: parent.transrate)
                     lastCall = Date()
                 }
                 else if lastCall.timeIntervalSinceNow < -10, parent.internalWaitTime > 28 * 1000 {
                     lastCall = Date()
-                    await callTranscribe(samples: [], transrate: parent.transrate)
+                    await callTranscribe(samples: [], globalCount: 0, transrate: parent.transrate)
                     lastCall = Date()
                 }
 
                 if parent.internalWaitTime > 0, bufdata.flush {
                     while parent.internalWaitTime > 0 {
                         lastCall = Date()
-                        await callTranscribe(samples: [], transrate: parent.transrate)
+                        await callTranscribe(samples: [], globalCount: 0, transrate: parent.transrate)
                         lastCall = Date()
                     }
                     await parent.whisperContext?.clear()
@@ -430,20 +408,21 @@ class WhisperState: NSObject, ObservableObject {
         }
 
         func finish_process() async {
+            let globalCount = self.parent.timeCount
             let buf = buffer.flush_buffer()
             parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
-            await callTranscribe(samples: buf, transrate: parent.transrate)
+            await callTranscribe(samples: buf.buf, globalCount: globalCount - buf.offset, transrate: parent.transrate)
 
             while parent.internalWaitTime > 0 {
                 lastCall = Date()
-                await callTranscribe(samples: [], transrate: parent.transrate)
+                await callTranscribe(samples: [], globalCount: 0, transrate: parent.transrate)
                 lastCall = Date()
             }
             await parent.whisperContext?.clear()
             parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
         }
 
-        private func callTranscribe(samples: [Float], transrate: Bool) async {
+        private func callTranscribe(samples: [Float], globalCount: Int, transrate: Bool) async {
             if (!parent.isModelLoaded) {
                 return
             }
@@ -457,7 +436,7 @@ class WhisperState: NSObject, ObservableObject {
                 OSAtomicDecrement64(&parent.callCount)
             }
             guard await whisperContext.isLive else { return }
-            let txt = await whisperContext.fullTranscribe(samples: samples, fixlang: parent.fixLanguage, transrate: transrate, language_thold: Float(parent.languageCutoff), lang_callback: { lang in
+            let txt = await whisperContext.fullTranscribe(samples: samples, globalCount: globalCount, fixlang: parent.fixLanguage, transrate: transrate, language_thold: Float(parent.languageCutoff), lang_callback: { lang in
                 self.parent.language = lang
             })
             guard await whisperContext.isLive else { return }
@@ -468,7 +447,7 @@ class WhisperState: NSObject, ObservableObject {
                     let v = txt.sorted(by: { $0.time.start < $1.time.start }).map({ ($0.text, $0.probability, Double($0.time.start) / 16000) })
                     parent.messageLog = v.map(\.0)
                     parent.probLog = v.map(\.1)
-                    parent.messageTiming = v.map(\.2).map(parent.fixTimestamp)
+                    parent.messageTiming = v.map(\.2)
                 }
             }
         }

@@ -404,9 +404,10 @@ struct ContentView: View {
                         ) { spotlighting ? [$0] : [] }
                     }
 
-                    if whisperState.isPlaying || !whisperState.isRecording {
-                        HStack {
-                            Spacer()
+                    HStack {
+                        Spacer()
+                        Text(whisperState.model_size)
+                        if whisperState.isPlaying || !whisperState.isRecording {
                             Button(action: {
                                 if whisperState.isRecording {
                                     Task.detached {
