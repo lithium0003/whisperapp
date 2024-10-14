@@ -95,7 +95,7 @@ func margeTimeKeys(_ keys1: [Segment], _ keys2: [Segment]) -> [Segment] {
             needMergeKeys.append(a)
         }
     }
-    
+
     return (keys + filterTimeKey(needMergeKeys)).sorted(by: { $0.time.start < $1.time.start })
 }
 
@@ -144,9 +144,9 @@ actor WhisperContext {
     }
     
     func clear() {
-        backPoint = 0
-        processPoint = 0
         backWav = []
+        backPoint = 0
+        processPoint = backPoint
     }
 
     func reset() {
@@ -169,36 +169,19 @@ actor WhisperContext {
         }
 
         backWav += samples
+        let count = backWav.lastIndex(where: { $0 != 0 }) ?? backWav.count
         if !samples.isEmpty {
-            backPoint = globalCount - backWav.count
+            backPoint = globalCount - count
         }
         if backWav.isEmpty {
             return result
         }
 
-//        print(lastSegmentLog)
-//        print(backWav.count, backPoint, processPoint, globalCount, samples.count)
-
-        if let bt1 = lastSegmentLog.filter({ $0.time.start > backPoint }).last(where: { $0.time.stop < backPoint + backWav.count - max(16000 * 15, samples.count) }) {
-            let shift = bt1.time.start - 1600 * 2 - backPoint
-//            print("bt1", shift, bt1.time.start, bt1.time.stop, bt1.text)
+        var shift = 0
+        if let bt1 = lastSegmentLog.filter({ $0.time.start > backPoint }).last(where: { $0.time.stop < backPoint + count - max(16000 * 15, samples.count) }) {
+            shift = bt1.time.start - 1600 * 2 - backPoint
+            print("bt1", shift, count, backWav.count, backPoint, bt1.time.start, bt1.text)
             if shift > 0 {
-                if shift < backWav.count {
-                    backPoint += shift
-                    backWav.removeFirst(shift)
-                }
-                else {
-                    backPoint += backWav.count
-                    backWav.removeAll()
-                }
-            }
-        }
-
-        if backWav.last == 0 || backWav.count - samples.count >= 16000 * 28 {
-            let shift = samples.isEmpty ? 16000 * 15 : min(samples.count, 16000 * 15)
-//            print("shift", shift)
-            if shift > 0 {
-                let count = backWav.lastIndex(where: { $0 != 0 }) ?? backWav.count
                 if shift < count {
                     backPoint += shift
                     backWav.removeFirst(shift)
@@ -209,7 +192,21 @@ actor WhisperContext {
                 }
             }
         }
-//        print(backPoint, processPoint)
+
+        if shift <= 0, count - samples.count > 16000 * 30 || (samples.isEmpty && count > 16000 * 28) {
+            let shift = samples.isEmpty ? 16000 * 15 : min(samples.count, 16000 * 15)
+            print("shift", shift, count, backWav.count, backPoint)
+            if shift > 0 {
+                if shift < count {
+                    backPoint += shift
+                    backWav.removeFirst(shift)
+                }
+                else {
+                    backPoint += count
+                    backWav.removeAll()
+                }
+            }
+        }
 
         if processPoint < backPoint {
             processPoint = backPoint
@@ -273,17 +270,18 @@ actor WhisperContext {
         if lang_id < 0 {
             lang_callback?("(no voice)")
             var shift = 16000 * 15
-            if backWav.count > 16000 * 30 {
+            let count = backWav.lastIndex(where: { $0 != 0 }) ?? backWav.count
+            if count > 16000 * 30 {
                 shift = 16000 * 25
             }
 
             if shift > 0 {
-                if shift < backWav.count {
+                if shift < count {
                     backPoint += shift
                     backWav.removeFirst(shift)
                 }
                 else {
-                    backPoint += backWav.count
+                    backPoint += count
                     backWav.removeAll()
                 }
             }
@@ -407,7 +405,7 @@ actor WhisperContext {
                             break
                         }
                     }
-                    if score >= 6 || score + 0.01 >= Double(count) {
+                    if score >= 3 || score + 0.01 >= Double(count) / 2 {
                         valid = false
                     }
                     print(valid, score, str)
@@ -446,7 +444,7 @@ actor WhisperContext {
                 if let t_min = t_tw.first, t_min > t1 || t_min < t0 - 300 {
                     valid = false
                 }
-                if let t_max = t_tw.last, t_max < t0 || t_max >= t_end || t_max > t1 + 300 {
+                if let t_max = t_tw.last, t_max < t0 || t_max > t1 + 300 {
                     valid = false
                 }
             }
@@ -486,6 +484,11 @@ actor WhisperContext {
             processPoint = lastStop
         }
 
+        if samples.isEmpty, count <= 16000 * 28 {
+            backPoint += count
+            backWav.removeAll()
+        }
+
         if processPoint < backPoint {
             processPoint = backPoint
         }
@@ -495,7 +498,7 @@ actor WhisperContext {
             return result
         }
 
-        print(Double(backPoint) / 16000, Double(processPoint) / 16000)
+        print("backpoint", backPoint, processPoint, Double(backPoint) / 16000, Double(processPoint) / 16000)
         return lastSegmentLog
     }
 

@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+      "shouldTranslate" : false
+    },
     "(in silence)" : {
       "localizations" : {
         "ja" : {
@@ -87,6 +90,9 @@
       "shouldTranslate" : false
     },
     "%lf" : {
+      "shouldTranslate" : false
+    },
+    "%lld" : {
       "shouldTranslate" : false
     },
     "%lld sec" : {

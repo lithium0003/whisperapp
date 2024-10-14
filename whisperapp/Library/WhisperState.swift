@@ -19,11 +19,22 @@ class WhisperState: NSObject, ObservableObject {
     @Published var isProcessing = false
     @Published var fixLanguage = "auto"
     @Published var transrate = false
-    @Published var messageLog: [String] = []
-    @Published var probLog: [[Double]] = []
-    @Published var messageTiming: [Double] = []
     @Published var currentGain = 1.0
-    @Published var timeCount = 0
+
+    struct MessageLog {
+        let message: String
+        let prob: [Double]
+        let timing: Double?
+    }
+    private(set) var messageLog: [MessageLog] = []
+
+    func appendMessage(_ message: String) {
+        messageLog.append(.init(message: message, prob: [], timing: nil))
+    }
+
+    func appendMessage<S, T: Sequence>(contentsOf: T) where S: StringProtocol, T.Element == S {
+        messageLog.append(contentsOf: contentsOf.map({ .init(message: String($0), prob: [], timing: nil) }))
+    }
 
     var active = false
     var waitTime = 0.0
@@ -36,6 +47,7 @@ class WhisperState: NSObject, ObservableObject {
     var silentLeveldB: Float = -0
     var volDevThreshold: Float = 0.9
     var gainTargetdB: Float = -5
+    var timeCount = 0
 
     var logBuffer: [Segment] = []
 
@@ -89,9 +101,7 @@ class WhisperState: NSObject, ObservableObject {
 
     @MainActor
     func clearLog() {
-        messageLog = []
-        probLog = []
-        messageTiming  = []
+        messageLog.removeAll()
         timeCount = 0
         logBuffer.removeAll()
         Task {
@@ -100,12 +110,10 @@ class WhisperState: NSObject, ObservableObject {
     }
 
     private func loadModel() {
-        Task.detached { @MainActor [self] in
-            messageLog.append("Loading model...")
-        }
+        appendMessage("Loading model...")
         let model_size = model_size
         if let modelUrl {
-            Task.detached {
+            Task.detached { [self] in
                 let outPipe = Pipe()
                 let redirector = AsyncThrowingStream<String, Error> { continuation in
                     Task.detached {
@@ -145,27 +153,17 @@ class WhisperState: NSObject, ObservableObject {
 
                 do {
                     for try await log in redirector {
-                        Task.detached { @MainActor [self] in
-                            messageLog.append(contentsOf: log.split(whereSeparator: \.isNewline).map({ String($0) }))
-                        }
+                        appendMessage(contentsOf: log.split(whereSeparator: \.isNewline))
                     }
-                    Task.detached { @MainActor [self] in
-                        messageLog.append("Loaded model \(modelUrl.lastPathComponent)")
-                        messageLog.append(contentsOf: ["", "Ready to run.", ""])
-                    }
-                    Task.detached { @MainActor in
-                        self.isModelLoaded = true
-                    }
+                    appendMessage("Loaded model \(modelUrl.lastPathComponent)")
+                    appendMessage(contentsOf: ["", "Ready to run.", ""])
+                    isModelLoaded = true
                 } catch {
-                    Task.detached { @MainActor [self] in
-                        messageLog.append("Error in loading model.")
-                    }
+                    appendMessage("Error in loading model.")
                 }
             }
         } else {
-            Task.detached { @MainActor [self] in
-                messageLog.append(contentsOf: ["Could not locate model"])
-            }
+            appendMessage(contentsOf: ["Could not locate model"])
         }
     }
 
@@ -178,6 +176,7 @@ class WhisperState: NSObject, ObservableObject {
 
         func stop() async {
             await parent.whisperContext?.clear()
+            buffer.clear()
         }
 
         class SoundBuffer {
@@ -233,17 +232,19 @@ class WhisperState: NSObject, ObservableObject {
 
             func read_buffer(internalLength: Int) -> (buf: [Float], offset: Int, flush: Bool) {
                 if soundBuf.count >= callLength {
-                    let n = min(soundBuf.count, 16000 * 25)
+                    let n = callLength
                     let buf = Array(soundBuf[0..<n])
                     soundBuf.removeFirst(n)
                     let offset = soundBuf.count
                     processing_samples += buf.count
+                    print("buf1", buf.count, offset)
                     return (buf: buf, offset: offset, flush: false)
                 }
                 if soundBuf.count > 16000 * 5, soundBuf.count + internalLength > callLength {
                     let buf = soundBuf
                     soundBuf.removeAll()
                     processing_samples += buf.count
+                    print("buf2", buf.count, 0)
                     return (buf: buf, offset: 0, flush: false)
                 }
                 else if lastSound.timeIntervalSinceNow < -5 {
@@ -253,9 +254,10 @@ class WhisperState: NSObject, ObservableObject {
                     preBuffer.removeAll()
                     if !buf.isEmpty {
                         processing_samples += buf.count
+                        print("buf3", buf.count, offset)
                         return (buf: buf, offset: offset, flush: true)
                     }
-                    return (buf: [], offset: offset, flush: false)
+                    return (buf: [], offset: 0, flush: false)
                 }
                 return (buf: [], offset: 0, flush: false)
             }
@@ -359,10 +361,7 @@ class WhisperState: NSObject, ObservableObject {
             }
             parent.active = scount < contCount
 
-            let globalCount = self.parent.timeCount
-            Task { @MainActor in
-                self.parent.timeCount += gainedData.count
-            }
+            parent.timeCount += gainedData.count
 
             #if os(iOS)
             let foreground = await UIApplication.shared.applicationState != .background
@@ -386,7 +385,7 @@ class WhisperState: NSObject, ObservableObject {
                 parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
                 if !bufdata.buf.isEmpty {
                     lastCall = Date()
-                    await callTranscribe(samples: bufdata.buf, globalCount: globalCount - bufdata.offset, transrate: parent.transrate)
+                    await callTranscribe(samples: bufdata.buf, globalCount: parent.timeCount - bufdata.offset, transrate: parent.transrate)
                     lastCall = Date()
                 }
                 else if lastCall.timeIntervalSinceNow < -10, parent.internalWaitTime > 28 * 1000 {
@@ -408,10 +407,9 @@ class WhisperState: NSObject, ObservableObject {
         }
 
         func finish_process() async {
-            let globalCount = self.parent.timeCount
             let buf = buffer.flush_buffer()
             parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
-            await callTranscribe(samples: buf.buf, globalCount: globalCount - buf.offset, transrate: parent.transrate)
+            await callTranscribe(samples: buf.buf, globalCount: parent.timeCount - buf.offset, transrate: parent.transrate)
 
             while parent.internalWaitTime > 0 {
                 lastCall = Date()
@@ -443,12 +441,8 @@ class WhisperState: NSObject, ObservableObject {
             buffer.done_processing(sample_count: samples.count)
             parent.internalWaitTime = await Double(whisperContext.waitTime) / 16000
             if !txt.isEmpty {
-                Task.detached { @MainActor [self] in
-                    let v = txt.sorted(by: { $0.time.start < $1.time.start }).map({ ($0.text, $0.probability, Double($0.time.start) / 16000) })
-                    parent.messageLog = v.map(\.0)
-                    parent.probLog = v.map(\.1)
-                    parent.messageTiming = v.map(\.2)
-                }
+                let v = txt.sorted(by: { $0.time.start < $1.time.start }).map({ MessageLog(message: $0.text, prob: $0.probability, timing: Double($0.time.start) / 16000) })
+                parent.messageLog = v
             }
         }
     }
@@ -476,14 +470,19 @@ class WhisperState: NSObject, ObservableObject {
 
             await processer?.finish_process()
 
+            while recorder.recording {
+                try? await Task.sleep(for: .milliseconds(100))
+            }
+
             await processer?.stop()
+            waitTime = 0
             Task.detached { @MainActor [self] in
-                isRecording = recorder.recording
                 processer = nil
 #if os(iOS)
                 UIApplication.shared.isIdleTimerDisabled = false
 #endif
                 isProcessing = false
+                isRecording = false
             }
         } else {
             switch AVCaptureDevice.authorizationStatus(for: .audio) {
@@ -553,14 +552,19 @@ class WhisperState: NSObject, ObservableObject {
 
             await processer?.finish_process()
 
+            while player.recording {
+                try? await Task.sleep(for: .milliseconds(100))
+            }
+
             await processer?.stop()
+            waitTime = 0
             Task.detached { @MainActor [self] in
-                isRecording = player.recording
                 processer = nil
 #if os(iOS)
                 UIApplication.shared.isIdleTimerDisabled = false
 #endif
                 isProcessing = false
+                isRecording = false
             }
         } else {
             callCount = 0
@@ -579,19 +583,24 @@ class WhisperState: NSObject, ObservableObject {
                 if data.isEmpty {
                     Task.detached { [self] in
                         await processer?.finish_process()
-                        
+
+                        while player.recording {
+                            try? await Task.sleep(for: .milliseconds(100))
+                        }
+
                         await processer?.stop()
+                        waitTime = 0
                         Task.detached { @MainActor [self] in
                             active = false
                             volLeveldB = -40
                             volDev = 0
 
-                            isRecording = player.recording
                             processer = nil
 #if os(iOS)
                             UIApplication.shared.isIdleTimerDisabled = false
 #endif
                             isProcessing = false
+                            isRecording = false
                         }
                     }
                 }

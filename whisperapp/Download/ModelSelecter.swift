@@ -123,6 +123,6 @@ struct ModelSelecter: View {
 }
 
 #Preview {
-    @StateObject var downloader = Downloader()
+    @Previewable @StateObject var downloader = Downloader()
     ModelSelecter(downloader: downloader)
 }
