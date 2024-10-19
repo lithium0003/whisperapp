@@ -48,6 +48,14 @@ class WhisperState: NSObject, ObservableObject {
     var volDevThreshold: Float = 0.9
     var gainTargetdB: Float = -5
     var timeCount = 0
+    var contextProcessing: Bool {
+        get async {
+            if callCount > 0 {
+                return true
+            }
+            return await whisperContext?.isRunning ?? false
+        }
+    }
 
     var logBuffer: [Segment] = []
 
@@ -168,6 +176,7 @@ class WhisperState: NSObject, ObservableObject {
     }
 
     actor Processer {
+        private let play: Bool
         private(set) var gain: Float = 1.0
         private let contCount: Int
         private var scount: Int
@@ -176,10 +185,11 @@ class WhisperState: NSObject, ObservableObject {
 
         func stop() async {
             await parent.whisperContext?.clear()
-            buffer.clear()
+            await buffer.clear()
         }
 
-        class SoundBuffer {
+        actor SoundBuffer {
+            private let play: Bool
             private var soundBuf: [Float] = []
             private var preBuffer: [Float] = []
             private let preLength = 1600 * 2 * 2 // 400ms
@@ -188,15 +198,20 @@ class WhisperState: NSObject, ObservableObject {
             let callLength: Int
             private let contCount: Int
             private var processing_samples = 0
-            var lastSound = Date()
+            private(set) var lastSound = Date()
             private var wavCache: [Float] = []
             private var rawSpecCache: [Float] = []
             private var voiceSpecCache: [Float] = []
+            private var bufferTic = -1
 
-            
-            init(callLength: Int, contCount: Int) {
+            init(callLength: Int, contCount: Int, play: Bool) {
                 self.callLength = callLength
                 self.contCount = contCount
+                self.play = play
+            }
+
+            func touchTime() {
+                lastSound = Date()
             }
 
             func done_processing(sample_count: Int) {
@@ -214,70 +229,93 @@ class WhisperState: NSObject, ObservableObject {
                 soundBuf.removeAll()
             }
 
-            func append_preData(data: [Float]) {
+            func append_preData(data: [Float], tic: Int) {
+                if bufferTic < 0 {
+                    bufferTic = tic
+                }
                 preBuffer.append(contentsOf: data)
             }
 
-            func append_data(data: [Float]) {
+            func append_data(data: [Float], tic: Int) {
                 let fixData: [Float]
                 if !preBuffer.isEmpty {
                     fixData = preBuffer + data
                 }
                 else {
+                    if bufferTic < 0 {
+                        bufferTic = tic
+                    }
                     fixData = data
                 }
                 preBuffer = []
                 soundBuf.append(contentsOf: fixData)
             }
 
-            func read_buffer(internalLength: Int) -> (buf: [Float], offset: Int, flush: Bool) {
+            func read_buffer(internalLength: Int) -> (buf: [Float], tic: Int, flush: Bool) {
                 if soundBuf.count >= callLength {
-                    let n = callLength
-                    let buf = Array(soundBuf[0..<n])
-                    soundBuf.removeFirst(n)
-                    let offset = soundBuf.count
-                    processing_samples += buf.count
-                    print("buf1", buf.count, offset)
-                    return (buf: buf, offset: offset, flush: false)
-                }
-                if soundBuf.count > 16000 * 5, soundBuf.count + internalLength > callLength {
-                    let buf = soundBuf
-                    soundBuf.removeAll()
-                    processing_samples += buf.count
-                    print("buf2", buf.count, 0)
-                    return (buf: buf, offset: 0, flush: false)
-                }
-                else if lastSound.timeIntervalSinceNow < -5 {
-                    let buf = soundBuf
-                    let offset = preBuffer.count
-                    soundBuf.removeAll()
+                    soundBuf += preBuffer
                     preBuffer.removeAll()
-                    if !buf.isEmpty {
-                        processing_samples += buf.count
-                        print("buf3", buf.count, offset)
-                        return (buf: buf, offset: offset, flush: true)
-                    }
-                    return (buf: [], offset: 0, flush: false)
+                    let tic = bufferTic
+                    let buf = Array(soundBuf[0..<callLength])
+                    soundBuf.removeFirst(callLength)
+                    bufferTic += callLength
+                    processing_samples += buf.count
+                    print("buf1", buf.count, tic)
+                    return (buf: buf, tic: tic, flush: false)
                 }
-                return (buf: [], offset: 0, flush: false)
+                if !play {
+                    if soundBuf.count > 16000 * 5, soundBuf.count + internalLength > callLength {
+                        let tic = bufferTic
+                        let buf = soundBuf + preBuffer
+                        soundBuf.removeAll()
+                        preBuffer.removeAll()
+                        bufferTic = -1
+                        processing_samples += buf.count
+                        print("buf2", buf.count, tic)
+                        return (buf: buf, tic: tic, flush: false)
+                    }
+                    else if lastSound.timeIntervalSinceNow < -5 {
+                        if soundBuf.isEmpty {
+                            soundBuf.removeAll()
+                            preBuffer.removeAll()
+                            bufferTic = -1
+                            return (buf: [], tic: -1, flush: false)
+                        }
+                        let tic = bufferTic
+                        let buf = soundBuf + preBuffer
+                        soundBuf.removeAll()
+                        preBuffer.removeAll()
+                        bufferTic = -1
+                        if !buf.isEmpty {
+                            processing_samples += buf.count
+                            print("buf3", buf.count, tic)
+                            return (buf: buf, tic: tic, flush: true)
+                        }
+                        return (buf: [], tic: -1, flush: false)
+                    }
+                }
+                return (buf: [], tic: -1, flush: false)
             }
 
-            func flush_buffer() -> (buf: [Float], offset: Int) {
-                let buf = soundBuf
-                let offset = preBuffer.count
+            func flush_buffer() -> (buf: [Float], tic: Int) {
+                let tic = bufferTic
+                let buf = soundBuf + preBuffer
                 soundBuf.removeAll()
                 preBuffer.removeAll()
+                bufferTic = -1
                 processing_samples += buf.count
-                return (buf: buf, offset: offset)
+                print("flush_buffer", buf.count, tic)
+                return (buf: buf, tic: tic)
             }
         }
         private var buffer: SoundBuffer
         nonisolated private let parent: WhisperState
 
-        init(parent: WhisperState) {
+        init(parent: WhisperState, play: Bool) {
+            self.play = play
             self.parent = parent
             self.contCount = parent.contCount
-            self.buffer = SoundBuffer(callLength: 16000 * parent.bufferSec, contCount: contCount)
+            self.buffer = SoundBuffer(callLength: 16000 * parent.bufferSec, contCount: contCount, play: play)
             self.scount = contCount
         }
 
@@ -361,8 +399,6 @@ class WhisperState: NSObject, ObservableObject {
             }
             parent.active = scount < contCount
 
-            parent.timeCount += gainedData.count
-
             #if os(iOS)
             let foreground = await UIApplication.shared.applicationState != .background
             #else
@@ -370,54 +406,59 @@ class WhisperState: NSObject, ObservableObject {
             #endif
 
             if !foreground || parent.active {
-                buffer.append_data(data: gainedData)
-                buffer.lastSound = Date()
+                await buffer.append_data(data: gainedData, tic: parent.timeCount)
+                await buffer.touchTime()
             }
             else {
-                buffer.append_preData(data: gainedData)
+                await buffer.append_preData(data: gainedData, tic: parent.timeCount)
                 if scount < contCount {
-                    buffer.lastSound = Date()
+                    await buffer.touchTime()
                 }
             }
+            parent.timeCount += gainedData.count
 
-            if foreground, parent.callCount == 0 {
-                let bufdata = buffer.read_buffer(internalLength: Int(parent.internalWaitTime * 16000))
-                parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
+            if foreground, let r = await parent.whisperContext?.isRunning, !r, parent.callCount == 0 {
+                let bufdata = await buffer.read_buffer(internalLength: Int(parent.internalWaitTime * 16000))
+                parent.waitTime = await buffer.get_waittime() + parent.internalWaitTime
                 if !bufdata.buf.isEmpty {
                     lastCall = Date()
-                    await callTranscribe(samples: bufdata.buf, globalCount: parent.timeCount - bufdata.offset, transrate: parent.transrate)
+                    await callTranscribe(samples: bufdata.buf, globalCount: bufdata.tic, transrate: parent.transrate)
                     lastCall = Date()
                 }
-                else if lastCall.timeIntervalSinceNow < -10, parent.internalWaitTime > 28 * 1000 {
+                else if !play, lastCall.timeIntervalSinceNow < -10 {
                     lastCall = Date()
-                    await callTranscribe(samples: [], globalCount: 0, transrate: parent.transrate)
+                    await callTranscribe(samples: [], globalCount: -1, transrate: parent.transrate)
                     lastCall = Date()
                 }
 
                 if parent.internalWaitTime > 0, bufdata.flush {
                     while parent.internalWaitTime > 0 {
+                        print("flush", parent.internalWaitTime)
                         lastCall = Date()
-                        await callTranscribe(samples: [], globalCount: 0, transrate: parent.transrate)
+                        await callTranscribe(samples: [], globalCount: -1, transrate: parent.transrate)
                         lastCall = Date()
                     }
                     await parent.whisperContext?.clear()
                 }
             }
-            parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
+            parent.waitTime = await buffer.get_waittime() + parent.internalWaitTime
         }
 
         func finish_process() async {
-            let buf = buffer.flush_buffer()
-            parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
-            await callTranscribe(samples: buf.buf, globalCount: parent.timeCount - buf.offset, transrate: parent.transrate)
+            let buf = await buffer.flush_buffer()
+            parent.waitTime = await buffer.get_waittime() + parent.internalWaitTime
+            await callTranscribe(samples: buf.buf, globalCount: buf.tic, transrate: parent.transrate)
+            parent.waitTime = await buffer.get_waittime() + parent.internalWaitTime
 
             while parent.internalWaitTime > 0 {
+                print("last call", parent.internalWaitTime)
                 lastCall = Date()
-                await callTranscribe(samples: [], globalCount: 0, transrate: parent.transrate)
+                await callTranscribe(samples: [], globalCount: -1, transrate: parent.transrate)
                 lastCall = Date()
+                parent.waitTime = await buffer.get_waittime() + parent.internalWaitTime
             }
             await parent.whisperContext?.clear()
-            parent.waitTime = buffer.get_waittime() + parent.internalWaitTime
+            parent.waitTime = await buffer.get_waittime() + parent.internalWaitTime
         }
 
         private func callTranscribe(samples: [Float], globalCount: Int, transrate: Bool) async {
@@ -427,18 +468,18 @@ class WhisperState: NSObject, ObservableObject {
             guard let whisperContext = parent.whisperContext else {
                 return
             }
-
-            parent.internalWaitTime = await Double(whisperContext.waitTime) / 16000
             OSAtomicIncrement64(&parent.callCount)
             defer {
                 OSAtomicDecrement64(&parent.callCount)
             }
+
+            parent.internalWaitTime = await Double(whisperContext.waitTime) / 16000
             guard await whisperContext.isLive else { return }
             let txt = await whisperContext.fullTranscribe(samples: samples, globalCount: globalCount, fixlang: parent.fixLanguage, transrate: transrate, language_thold: Float(parent.languageCutoff), lang_callback: { lang in
                 self.parent.language = lang
             })
             guard await whisperContext.isLive else { return }
-            buffer.done_processing(sample_count: samples.count)
+            await buffer.done_processing(sample_count: samples.count)
             parent.internalWaitTime = await Double(whisperContext.waitTime) / 16000
             if !txt.isEmpty {
                 let v = txt.sorted(by: { $0.time.start < $1.time.start }).map({ MessageLog(message: $0.text, prob: $0.probability, timing: Double($0.time.start) / 16000) })
@@ -504,7 +545,7 @@ class WhisperState: NSObject, ObservableObject {
                 fatalError()
             }
             callCount = 0
-            processer = Processer(parent: self)
+            processer = Processer(parent: self, play: false)
             Task.detached { @MainActor [self] in
                 isProcessing = true
 #if os(iOS)
@@ -568,7 +609,7 @@ class WhisperState: NSObject, ObservableObject {
             }
         } else {
             callCount = 0
-            processer = Processer(parent: self)
+            processer = Processer(parent: self, play: true)
             Task.detached { @MainActor [self] in
                 isProcessing = true
 #if os(iOS)
@@ -579,7 +620,9 @@ class WhisperState: NSObject, ObservableObject {
                 }
             }
             player.startRecording(file: file) { [self] data in
-                player.needToSleep = callCount > 0
+                Task {
+                    player.needToSleep = await contextProcessing
+                }
                 if data.isEmpty {
                     Task.detached { [self] in
                         await processer?.finish_process()

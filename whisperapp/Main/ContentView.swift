@@ -44,10 +44,44 @@ struct ContentView: View {
     @State private var importerPresented = false
     @State private var isDragging = false
     @State private var autoScroll = true
-    @State var scrollOffset = 0
-    @State var scrollpos: Int?
-    @State var viewHeight: CGFloat = 0
-    @State var viewPosition: CGFloat = 0
+    @State private var scrollOffset = 0 {
+        didSet {
+            if scrollOffset < 0 {
+                scrollOffset = 0
+            }
+            if scrollOffset > lineCount {
+                scrollOffset = lineCount
+            }
+            if scrollOffset > scrollMaxOffset {
+                scrollOffset = scrollMaxOffset
+            }
+        }
+    }
+    @State private var scrollMaxOffset = 0 {
+        didSet {
+            if scrollMaxOffset < 0 {
+                scrollMaxOffset = 0
+            }
+            if scrollMaxOffset > lineCount {
+                scrollMaxOffset = lineCount
+            }
+            if scrollOffset > scrollMaxOffset {
+                scrollOffset = scrollMaxOffset
+            }
+        }
+    }
+    @State private var scrollPosition = ScrollPosition()
+    @State private var logViewOffset: CGFloat = 0.0
+    @State private var visibleIndex: Set<Int> = []
+    @State private var scrollHeightFactor: CGFloat = 0.0
+    @State private var lineCount = 0 {
+        didSet {
+            if oldValue > lineCount {
+                scrollOffset = lineCount
+            }
+        }
+    }
+    @State private var prevLineCount = 0
 
     @AppStorage("silentLevel") var silentLeveldB = -20.0
     @AppStorage("gainTargetLevel") var gainTargetdB = 0.0
@@ -70,14 +104,8 @@ struct ContentView: View {
     @State var stateLog = ""
     @State var stateColor = Color.clear
     @State var spotlighting = false
-    @State var modelReady = false
     @State var isRecording = false
-    @State var counter = 0
-    var backColor: Color? {
-        if colorP {
-        }
-        return nil
-    }
+    @State var transrate = false
     var zeroLineColor: Color {
         colorScheme == .light ? .black : .white
     }
@@ -92,6 +120,69 @@ struct ContentView: View {
         formatter.allowedUnits = [.hour, .minute, .second]
         return formatter
     }()
+
+    func clearLog() {
+        whisperState.clearLog()
+        lineCount = 0
+        Task {
+            try await Task.sleep(for: .milliseconds(300))
+            scrollToBottom()
+            autoScroll = true
+        }
+    }
+
+    var headerView: some View {
+        ZStack {
+            HStack {
+                if let tstr = tformatter.string(from: TimeInterval(Double(whisperState.timeCount) / 16000)) {
+                    Text(tstr)
+                        .font(.body.monospacedDigit())
+                }
+                if !isRecording {
+                    Button(action: {
+                        clearLog()
+                    }, label: {
+                        Image(systemName: "trash")
+                            .tint(.red)
+                    })
+                }
+                Spacer()
+            }
+            HStack {
+                if callCount > 0 {
+                    Text("processing")
+                        .font(.subheadline.monospacedDigit())
+                }
+                if waitTime > 0 {
+                    Text("\(waitTime, format: .number.precision(.fractionLength(2))) sec wait")
+                        .font(.subheadline.monospacedDigit())
+                }
+                Text(String(localized: String.LocalizationValue(detectLanguage)))
+            }
+            .foregroundStyle(callCount == 0 ? .primary: Color.blue)
+            HStack {
+                Spacer()
+                if autoScroll {
+                    Image(systemName: "arrow.down.to.line")
+                }
+                else {
+                    Image(systemName: "play.slash.fill")
+                }
+            }
+        }
+        .onReceive(timer) { t in
+            if isRecording {
+                waitTime = whisperState.waitTime
+                callCount = Int(whisperState.callCount)
+                detectLanguage = whisperState.language
+            }
+            else if callCount > 0 {
+                waitTime = 0
+                callCount = 0
+                detectLanguage = ""
+            }
+        }
+    }
 
     struct VLine: Shape {
         func path(in rect: CGRect) -> Path {
@@ -253,7 +344,6 @@ struct ContentView: View {
     struct LogLineView: View {
         let i: Int
         let parent: ContentView
-        @State var isShowing = false
 
         @ViewBuilder
         var timeStr: some View {
@@ -270,27 +360,22 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             else {
-                Text(String(parent.whisperState.messageLog[i].message))
+                Text(parent.whisperState.messageLog[i].message)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
 
         @ViewBuilder
         var mainContent: some View {
-            if i >= 0, i < min(parent.counter, parent.whisperState.messageLog.count) {
+            if i >= 0, i < min(parent.whisperState.messageLog.count, parent.lineCount) {
                 HStack(alignment: .top) {
                     timeStr
                     logStr
                 }
             }
-            else if i == min(parent.counter, parent.whisperState.messageLog.count) {
+            else if i == min(parent.whisperState.messageLog.count, parent.lineCount) {
                 Text(parent.stateLog)
                     .foregroundStyle(parent.stateColor)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            else if i == min(parent.counter, parent.whisperState.messageLog.count) + 1 {
-                Text("")
-                    .foregroundStyle(.clear)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
@@ -300,80 +385,12 @@ struct ContentView: View {
         }
     }
 
-    struct RootLineView: View {
-        let i: Int
+    struct RootLineView: View, Identifiable {
+        let id: Int
         let parent: ContentView
 
         var body: some View {
-            if parent.autoScroll {
-                LogLineView(i: i + parent.counter - 200, parent: parent)
-            }
-            else {
-                LogLineView(i: i + parent.scrollOffset, parent: parent)
-            }
-        }
-    }
-
-    var headerView: some View {
-        ZStack {
-            HStack {
-                if let tstr = tformatter.string(from: TimeInterval(Double(whisperState.timeCount) / 16000)) {
-                    Text(tstr)
-                        .font(.body.monospacedDigit())
-                }
-                if !isRecording {
-                    Button(action: {
-                        whisperState.clearLog()
-                        autoScroll = true
-                        scrollOffset = 0
-                        scrollpos = nil
-                        viewHeight = 1
-                        viewPosition = 0
-                        counter = 0
-                    }, label: {
-                        Image(systemName: "trash")
-                            .tint(.red)
-                    })
-                }
-                Spacer()
-            }
-            HStack {
-                if callCount > 0 {
-                    Text("processing")
-                        .font(.subheadline.monospacedDigit())
-                }
-                if waitTime > 0 {
-                    Text("\(waitTime, format: .number.precision(.fractionLength(2))) sec wait")
-                        .font(.subheadline.monospacedDigit())
-                }
-                Text(String(localized: String.LocalizationValue(detectLanguage)))
-            }
-            .foregroundStyle(callCount == 0 ? .primary: Color.blue)
-            HStack {
-                Spacer()
-                Button(action: {
-                    withAnimation(nil) {
-                        autoScroll.toggle()
-                        if autoScroll {
-                            scrollpos = scrollpos == 200 ? 201: 200
-                        }
-                    }
-                }, label: {
-                    if autoScroll {
-                        Image(systemName: "play.slash.fill")
-                    }
-                    else {
-                        Image(systemName: "arrow.down.to.line")
-                    }
-                })
-            }
-        }
-        .onReceive(timer) { t in
-            if isRecording {
-                waitTime = whisperState.waitTime
-                callCount = Int(whisperState.callCount)
-                detectLanguage = whisperState.language
-            }
+            LogLineView(i: id + parent.scrollOffset, parent: parent)
         }
     }
 
@@ -387,6 +404,15 @@ struct ContentView: View {
                         .foregroundStyle(zeroLineColor)
                         .frame(height: 15)
                 }
+                .onAppear {
+                    if autoScroll {
+                        Task {
+                            try await Task.sleep(for: .milliseconds(300))
+                            scrollToBottom()
+                            autoScroll = true
+                        }
+                    }
+                }
             }
             ZStack {
                 HStack {
@@ -398,9 +424,10 @@ struct ContentView: View {
                     })
                     .disabled(isRecording)
                     Button(action: {
-                        whisperState.transrate.toggle()
+                        transrate.toggle()
+                        whisperState.transrate = transrate
                     }, label: {
-                        if whisperState.transrate {
+                        if transrate {
                             Text("in English")
                         }
                         else {
@@ -417,7 +444,11 @@ struct ContentView: View {
                             let success = await whisperState.toggleRecord()
                             if await whisperState.isRecording {
                                 Task { @MainActor [self] in
-                                    autoScroll = true
+                                    Task {
+                                        try await Task.sleep(for: .milliseconds(300))
+                                        scrollToBottom()
+                                        autoScroll = true
+                                    }
                                 }
                             }
                             Task.detached { @MainActor in
@@ -481,36 +512,6 @@ struct ContentView: View {
         }
     }
 
-    struct scrollIndicator : View {
-        var viewHeight: CGFloat
-        var viewPosition: CGFloat
-
-        init(viewHeight: CGFloat, viewPosition: CGFloat){
-            self.viewHeight = viewHeight
-            self.viewPosition = viewPosition
-        }
-
-        var body: some View {
-            Rectangle()
-                .foregroundStyle(Color.clear)
-                .frame(width: 5)
-                .background(PosPart(h: viewHeight, pos: viewPosition).fill())
-        }
-
-        struct PosPart: Shape {
-            let h: CGFloat
-            let pos: CGFloat
-
-            func path(in rect: CGRect) -> Path {
-                var p = Path()
-                let height = max(rect.size.height * h, rect.size.height / 10)
-                let y = min(rect.size.height * pos, rect.size.height - height)
-                p.addRoundedRect(in: CGRect(x: 0, y: y, width: rect.size.width, height: height), cornerSize: .init(width: 3, height: 3))
-                return p
-            }
-        }
-    }
-
     struct loadingView: View {
         let timer = Timer.publish(every: 0.1, on: .current, in: .common).autoconnect()
         @State var counter = 0
@@ -529,73 +530,136 @@ struct ContentView: View {
         }
     }
 
-    var body: some View {
-        VStack {
-            if modelReady {
-                headerView
-            }
-            ScrollView {
-                LazyVStack(spacing: 2) {
-                    ForEach(0..<300) { i in
-                        RootLineView(i: i, parent: self).id(i)
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .overlay(alignment: .trailing) {
-                scrollIndicator(viewHeight: viewHeight, viewPosition: viewPosition)
-                    .opacity(0.15)
-            }
-            .scrollIndicators(.never)
-            .onScrollTargetVisibilityChange(idType: Int.self) { ids in
-                print(ids)
-                viewHeight = CGFloat(ids.count) / CGFloat(whisperState.messageLog.count + 2)
-                if autoScroll {
-                    viewPosition = CGFloat(1) - viewHeight
-                    if !ids.contains(200) {
-                        withAnimation(nil) {
-                            scrollpos = scrollpos == 200 ? 201: 200
+    func scrollToBottom() {
+        //print("scrollToBottom", visibleIndex, visibleIndex.count, scrollOffset, lineCount, scrollMaxOffset)
+
+        scrollPosition.scrollTo(y: scrollHeightFactor)
+        Task {
+            scrollOffset = scrollMaxOffset
+        }
+    }
+
+    var contentLogView: some View {
+        ScrollView {
+            LazyVStack(spacing: 2) {
+                ForEach(0..<100) { i in
+                    RootLineView(id: i, parent: self)
+                        .onAppear {
+                            //print("a", i)
+                            visibleIndex.insert(i)
                         }
-                    }
+                        .onDisappear {
+                            //print("d", i)
+                            visibleIndex.remove(i)
+                        }
+                }
+                ForEach(1..<50) { i in
+                    Text("")
+                        .onAppear {
+                            //print("a", -i)
+                            visibleIndex.insert(-i)
+                        }
+                        .onDisappear {
+                            //print("d", -i)
+                            visibleIndex.remove(-i)
+                        }
+                }
+            }
+        }
+        .scrollDisabled(true)
+        .defaultScrollAnchor(.top)
+        .offset(CGSize(width: 0, height: logViewOffset))
+        .clipped()
+        .onChange(of: visibleIndex) { oldValue, newValue in
+            scrollHeightFactor = min(10000, CGFloat((max(0, lineCount - visibleIndex.count(where: { $0 >= 0 }))) * 20))
+
+            if oldValue.isEmpty {
+                // pass
+            }
+            else if oldValue.contains(where: { $0 < -1}), scrollOffset == 0, oldValue.filter({ $0 >= 0 }).contains(where: { $0 == 0}), newValue.contains(where: { $0 < -1}), newValue.filter({ $0 >= 0 }).contains(where: { $0 == 0}) {
+                scrollMaxOffset = 0
+            }
+            else if newValue.allSatisfy({ $0 < 0 }) {
+                scrollOffset = scrollMaxOffset
+            }
+            else if autoScroll, !newValue.contains(where: { $0 < 0 }) {
+                scrollMaxOffset = max(scrollMaxOffset, lineCount - newValue.count(where: { $0 >= 0 }) / 2)
+                scrollToBottom()
+            }
+            else if oldValue.count(where: { $0 < 0 }) > 0, oldValue.count(where: { $0 < 0 }) < newValue.count(where: { $0 < 0 }) {
+                let c1 = newValue.count(where: { $0 < 0 }) - oldValue.count(where: { $0 < 0 })
+                scrollMaxOffset = max(0, min(scrollMaxOffset, min(scrollMaxOffset, scrollOffset) - c1 + 1))
+            }
+            else if !oldValue.contains(where: { $0 < 0 }), newValue.contains(where: { $0 < 0 }) {
+                let c1 = oldValue.count(where: { $0 >= 0 }) - newValue.count(where: { $0 >= 0 })
+                if c1 > 0 {
+                    scrollMaxOffset = min(scrollMaxOffset, scrollOffset - c1 + 1)
+                }
+            }
+        }
+        .onChange(of: lineCount) { oldValue, newValue in
+            prevLineCount = oldValue
+            scrollMaxOffset = max(0, newValue - visibleIndex.count(where: { $0 >= 0 }) + 2)
+            scrollHeightFactor = min(10000, CGFloat((max(0, newValue - visibleIndex.count(where: { $0 >= 0 }))) * 20))
+            if autoScroll {
+                scrollToBottom()
+            }
+        }
+    }
+
+    var scrollLogView: some View {
+        GeometryReader { geometry in
+            ScrollView {
+                Rectangle()
+                    .foregroundStyle(.clear)
+                    .frame(height: geometry.size.height + scrollHeightFactor)
+            }
+            .scrollPosition($scrollPosition)
+            .onScrollGeometryChange(for: CGFloat.self) { geometry in
+                geometry.contentOffset.y
+            } action: { wasScrollY, isScrollY in
+                guard wasScrollY != isScrollY else { return }
+                //print(scrollHeightFactor, wasScrollY, isScrollY)
+                //print("scroll", "autoScroll:", autoScroll, whisperState.messageLog.count, lineCount, scrollOffset, scrollMaxOffset, visibleIndex)
+
+                if !autoScroll, isScrollY > scrollHeightFactor {
+                    autoScroll = true
                     return
                 }
-                if let m = ids.max(), m > 250 {
-                    if scrollOffset < whisperState.messageLog.count {
-                        withAnimation(nil) {
-                            scrollOffset += 150
-                            scrollpos = ids.min()! - 150
-                        }
-                    }
-                }
-                if let m = ids.min(), m < 50 {
-                    if scrollOffset > 0 {
-                        withAnimation(nil) {
-                            if scrollOffset > 150 {
-                                scrollOffset -= 150
-                                scrollpos = ids.max()! + 150
-                            }
-                            else {
-                                scrollpos = ids.min()! + scrollOffset
-                                scrollOffset = 0
-                            }
-                        }
-                    }
-                }
-                if !ids.isEmpty, ids.map({ $0 + scrollOffset }).allSatisfy({ $0 >= whisperState.messageLog.count }) {
-                    withAnimation(nil) {
-                        let o = whisperState.messageLog.count - ids.count - scrollOffset
-                        scrollOffset = whisperState.messageLog.count - 100
-                        scrollpos = ids.min()! - o
-                    }
-                }
-                viewPosition = CGFloat((ids.min() ?? 0) + scrollOffset) / CGFloat(whisperState.messageLog.count + 2)
-            }
-            .scrollPosition(id: $scrollpos)
-            .onScrollPhaseChange { oldPhase, newPhase in
-                if newPhase != .idle, autoScroll {
+                if autoScroll, max(isScrollY, wasScrollY) < scrollHeightFactor, isScrollY < wasScrollY {
                     autoScroll = false
-                    scrollOffset = whisperState.messageLog.count - (scrollpos ?? 0)
+                    return
                 }
+
+                if isScrollY < 0 {
+                    logViewOffset = -isScrollY
+                    scrollOffset = 0
+                    return
+                }
+
+                if isScrollY > scrollHeightFactor {
+                    logViewOffset = scrollHeightFactor - isScrollY
+                    scrollOffset = scrollMaxOffset
+                    return
+                }
+                logViewOffset = 0
+
+                let newValue = Int(isScrollY / max(1, scrollHeightFactor) * CGFloat(scrollMaxOffset + 1))
+                scrollOffset = min(lineCount, min(scrollMaxOffset, newValue))
+
+                //print("scroll2", "autoScroll:", autoScroll, whisperState.messageLog.count, lineCount, scrollOffset, scrollMaxOffset, visibleIndex)
+            }
+        }
+    }
+
+    var body: some View {
+        VStack {
+            if whisperState.isModelLoaded {
+                headerView
+            }
+            ZStack {
+                contentLogView
+                scrollLogView
             }
             .onTapGesture{}
             .onLongPressGesture(minimumDuration: 0.5) {
@@ -605,7 +669,7 @@ struct ContentView: View {
                 let resultText = whisperState.messageLog.map({ $0.message }).joined(separator: "\n")
                 userData.presentedPage.append(.edit(text: resultText))
             }
-            if modelReady {
+            if whisperState.isModelLoaded {
                 indicatorView
             }
             else {
@@ -635,6 +699,26 @@ struct ContentView: View {
             whisperState.languageCutoff = languageCutoff
             whisperState.volDevThreshold = Float(volDevThreshold)
             whisperState.gainTargetdB = Float(gainTargetdB)
+            lineCount = whisperState.messageLog.count
+        }
+        .onChange(of: whisperState.isModelLoaded) { oldValue, newValue in
+            if oldValue != newValue, newValue {
+                whisperState.clearLog()
+                whisperState.appendMessage(contentsOf: [
+                    String(localized: "Ready to start."),
+                    String(localized: "LogPress to export log."),
+                ])
+                if tutorial == 0 {
+                    spotlighting = true
+                    tutorial += 1
+                }
+                lineCount = whisperState.messageLog.count
+                Task {
+                    try await Task.sleep(for: .milliseconds(300))
+                    scrollToBottom()
+                    autoScroll = true
+                }
+            }
         }
         .onReceive(timer) { t in
             if showingAlert { return }
@@ -643,9 +727,7 @@ struct ContentView: View {
                     spotlighting = false
                 }
             }
-            if !whisperState.isModelLoaded {
-                counter = whisperState.messageLog.count
-            }
+            lineCount = whisperState.messageLog.count
             if whisperState.isRecording {
                 isRecording = true
                 if active {
@@ -660,26 +742,11 @@ struct ContentView: View {
                     stateLog = String(localized: "[waiting to speak...]")
                     stateColor = .purple
                 }
-                counter = whisperState.messageLog.count
             }
             else if isRecording {
                 stateLog = ""
                 stateColor = .clear
-                counter = whisperState.messageLog.count
                 isRecording = false
-            }
-            if !modelReady, whisperState.isModelLoaded {
-                whisperState.clearLog()
-                whisperState.appendMessage(contentsOf: [
-                    String(localized: "Ready to start."),
-                    String(localized: "LogPress to export log."),
-                ])
-                if tutorial == 0 {
-                    spotlighting = true
-                    tutorial += 1
-                }
-                viewHeight = CGFloat(1)
-                modelReady = true
             }
         }
         .alert(isPresented: $showingAlert) {
@@ -690,9 +757,13 @@ struct ContentView: View {
             switch result {
             case .success(let url):
                 print(url)
-                autoScroll = true
                 Task.detached {
                     await whisperState.togglePlay(file: url)
+                }
+                Task {
+                    try await Task.sleep(for: .milliseconds(300))
+                    scrollToBottom()
+                    autoScroll = true
                 }
             case .failure:
                 print("failure")

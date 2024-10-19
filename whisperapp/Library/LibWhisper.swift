@@ -138,12 +138,20 @@ actor WhisperContext {
     private var backPoint = 0
     private var backWav = [Float]()
     private var processPoint = 0
+    private var previousPoint = 0
     private var lastSegmentLog = [Segment]()
     var waitTime: Int {
         (backWav.lastIndex(where: { $0 != 0 }) ?? 0) + backPoint - processPoint
     }
-    
+
+    private var isRealTime = false
+    func setRealTime(_ isRealTime: Bool) {
+        self.isRealTime = isRealTime
+    }
+
     func clear() {
+        previousPoint = max(previousPoint, backPoint + (backWav.lastIndex(where: { $0 != 0 }) ?? backWav.count - 1) + 1)
+        print("previous point: \(previousPoint)")
         backWav = []
         backPoint = 0
         processPoint = backPoint
@@ -152,6 +160,7 @@ actor WhisperContext {
     func reset() {
         backPoint = 0
         processPoint = 0
+        previousPoint = 0
         backWav = []
         lastSegmentLog.removeAll()
     }
@@ -168,18 +177,20 @@ actor WhisperContext {
             isRunning = false
         }
 
-        backWav += samples
-        let count = backWav.lastIndex(where: { $0 != 0 }) ?? backWav.count
-        if !samples.isEmpty {
-            backPoint = globalCount - count
+        print("globalCount:", globalCount, "samples:", samples.count, "backPoint:", backPoint, "backwav:", backWav.count)
+        if !samples.isEmpty, globalCount >= 0 {
+            print("prevPoint", backPoint, "curPoint", globalCount - backWav.count)
+            backPoint = globalCount - backWav.count
         }
+        backWav += samples
+        let count = (backWav.lastIndex(where: { $0 != 0 }) ?? backWav.count - 1) + 1
         if backWav.isEmpty {
             return result
         }
 
         var shift = 0
-        if let bt1 = lastSegmentLog.filter({ $0.time.start > backPoint }).last(where: { $0.time.stop < backPoint + count - max(16000 * 15, samples.count) }) {
-            shift = bt1.time.start - 1600 * 2 - backPoint
+        if let bt1 = lastSegmentLog.filter({ $0.time.start > previousPoint }).filter({ $0.time.start > backPoint }).last(where: { $0.time.stop < backPoint + count - max(16000 * 15, samples.count) }) {
+            shift = bt1.time.start - 160 * 25 - backPoint
             print("bt1", shift, count, backWav.count, backPoint, bt1.time.start, bt1.text)
             if shift > 0 {
                 if shift < count {
@@ -306,9 +317,17 @@ actor WhisperContext {
             if t0 > t_end - 100 {
                 break
             }
-            // if last segment touch the end, skip it
-            if t1 >= t_end {
-                break
+            if isRealTime {
+                // if last segment over the end, skip it
+                if t1 > t_end {
+                    break
+                }
+            }
+            else {
+                // if last segment touch the end, skip it
+                if t1 >= t_end {
+                    break
+                }
             }
             var sound_t0 = Int(t0) * 160 + backPoint
             var sound_t1 = Int(t1) * 160 + backPoint
@@ -440,12 +459,6 @@ actor WhisperContext {
                         valid = false
                     }
                     print(valid, t0, t_tw[0], t1)
-                }
-                if let t_min = t_tw.first, t_min > t1 || t_min < t0 - 300 {
-                    valid = false
-                }
-                if let t_max = t_tw.last, t_max < t0 || t_max > t1 + 300 {
-                    valid = false
                 }
             }
             if !valid {
