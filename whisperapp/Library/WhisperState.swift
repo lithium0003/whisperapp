@@ -545,6 +545,7 @@ class WhisperState: NSObject, ObservableObject {
                 fatalError()
             }
             callCount = 0
+            await whisperContext?.setRealTime(true)
             processer = Processer(parent: self, play: false)
             Task.detached { @MainActor [self] in
                 isProcessing = true
@@ -609,6 +610,7 @@ class WhisperState: NSObject, ObservableObject {
             }
         } else {
             callCount = 0
+            await whisperContext?.setRealTime(false)
             processer = Processer(parent: self, play: true)
             Task.detached { @MainActor [self] in
                 isProcessing = true

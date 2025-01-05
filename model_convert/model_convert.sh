@@ -5,7 +5,7 @@ bash download_whisper.sh
 
 if [ ! -d whisper.cpp ]; then
     git clone --depth=1 https://github.com/ggerganov/whisper.cpp.git && cd whisper.cpp
-    make -j quantize
+    make -j build
     cd ..
 fi
 
@@ -21,7 +21,7 @@ do
     fi
     bash download_model.sh $model
     python3 convert-h5-to-ggml-decoder.py $model . .
-    whisper.cpp/quantize ggml-model.bin ggml-${model}-q8_0.bin q8_0
+    whisper.cpp/build/bin/quantize ggml-model.bin ggml-${model}-q8_0.bin q8_0
     rm ggml-model.bin
 done
 

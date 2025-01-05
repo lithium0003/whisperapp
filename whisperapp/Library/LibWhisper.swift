@@ -260,7 +260,7 @@ actor WhisperContext {
             params.beam_search.beam_size = 8
             params.entropy_thold    = 2.8
             params.suppress_blank   = false
-            params.suppress_non_speech_tokens = true
+            params.suppress_nst     = true
             params.no_timestamps    = false
             params.single_segment   = true
             params.token_timestamps = true

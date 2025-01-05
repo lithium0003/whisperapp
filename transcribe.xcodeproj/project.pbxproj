@@ -3,20 +3,31 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BE33E4752CAE2B1600CEE96F /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE893C1C2BDA803A00AC9CB8 /* whisper */; };
-		BE33E4762CAE2B1600CEE96F /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE845C772CA0CC91001ED824 /* whisper */; };
-		BE33E4772CAE2B1600CEE96F /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE845C7B2CA0CE5E001ED824 /* whisper */; };
-		BE33E4782CAE2B1600CEE96F /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE845C7E2CA0D04A001ED824 /* whisper */; };
-		BE7152AB2CA17CA100A4C69E /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE7152AA2CA17CA100A4C69E /* whisper */; };
+		BE002AFE2D2B43740013E89F /* libggml.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEA2D2B43460013E89F /* libggml.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002AFF2D2B43740013E89F /* libggml-base.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEB2D2B43460013E89F /* libggml-base.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B002D2B43740013E89F /* libggml-blas.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEC2D2B43460013E89F /* libggml-blas.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B012D2B43740013E89F /* libggml-cpu.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AED2D2B43460013E89F /* libggml-cpu.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B022D2B43740013E89F /* libggml-metal.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEE2D2B43460013E89F /* libggml-metal.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B032D2B43740013E89F /* libwhisper.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEF2D2B43460013E89F /* libwhisper.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B042D2B43740013E89F /* libwhisper.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AF02D2B43460013E89F /* libwhisper.1.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B052D2B43740013E89F /* libwhisper.1.7.3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AF12D2B43460013E89F /* libwhisper.1.7.3.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B062D2B43740013E89F /* libwhisper.coreml.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AF22D2B43460013E89F /* libwhisper.coreml.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B1C2D2B44700013E89F /* libggml.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B082D2B444E0013E89F /* libggml.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B1D2D2B44700013E89F /* libggml-base.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B092D2B444E0013E89F /* libggml-base.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B1E2D2B44700013E89F /* libggml-blas.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0A2D2B444E0013E89F /* libggml-blas.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B1F2D2B44700013E89F /* libggml-cpu.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0B2D2B444E0013E89F /* libggml-cpu.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B202D2B44700013E89F /* libggml-metal.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0C2D2B444E0013E89F /* libggml-metal.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B212D2B44700013E89F /* libwhisper.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0D2D2B444E0013E89F /* libwhisper.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B222D2B44700013E89F /* libwhisper.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0E2D2B444E0013E89F /* libwhisper.1.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B232D2B44700013E89F /* libwhisper.1.7.3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0F2D2B444E0013E89F /* libwhisper.1.7.3.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE002B242D2B44700013E89F /* libwhisper.coreml.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B102D2B444E0013E89F /* libwhisper.coreml.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		BE845C462CA0B336001ED824 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE845C452CA0B336001ED824 /* RootView.swift */; };
 		BE845C482CA0B3C4001ED824 /* ConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE845C472CA0B3C4001ED824 /* ConfigView.swift */; };
 		BE845C4A2CA0B3E2001ED824 /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE845C492CA0B3E2001ED824 /* EditView.swift */; };
-		BE845C502CA0B61D001ED824 /* ggml-tiny-q8_0.bin in Resources */ = {isa = PBXBuildFile; fileRef = BE845C4E2CA0B61D001ED824 /* ggml-tiny-q8_0.bin */; };
-		BE845C512CA0B61D001ED824 /* ggml-tiny-encoder.mlmodelc in Resources */ = {isa = PBXBuildFile; fileRef = BE845C4D2CA0B61D001ED824 /* ggml-tiny-encoder.mlmodelc */; };
 		BE845C522CA0B61D001ED824 /* tiny in Resources */ = {isa = PBXBuildFile; fileRef = BE845C4F2CA0B61D001ED824 /* tiny */; };
 		BE893BDC2BDA65A500AC9CB8 /* whisperappApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BDB2BDA65A500AC9CB8 /* whisperappApp.swift */; };
 		BE893BDE2BDA65A500AC9CB8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893BDD2BDA65A500AC9CB8 /* ContentView.swift */; };
@@ -30,16 +41,64 @@
 		BE893C212BDAA3DE00AC9CB8 /* TextFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE893C202BDAA3DE00AC9CB8 /* TextFile.swift */; };
 		BE893C232BDAB6BB00AC9CB8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BE893C222BDAB6BB00AC9CB8 /* Localizable.xcstrings */; };
 		BE893C2B2BDB2B9000AC9CB8 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BE893C2A2BDB2B9000AC9CB8 /* InfoPlist.xcstrings */; };
-		BEB340EA2CB1A63500DE57A7 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BEB340E92CB1A63500DE57A7 /* whisper */; };
 		BEB341112CB64D4300DE57A7 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEB341102CB64D4300DE57A7 /* Player.swift */; };
+		BECC85522D20CD5D00B2F082 /* ggml-tiny-encoder.mlmodelc in Resources */ = {isa = PBXBuildFile; fileRef = BECC854F2D20CD5D00B2F082 /* ggml-tiny-encoder.mlmodelc */; };
+		BECC85542D20CE4700B2F082 /* ggml-tiny-q8_0.bin in Resources */ = {isa = PBXBuildFile; fileRef = BECC85532D20CE4700B2F082 /* ggml-tiny-q8_0.bin */; };
+		E3F92DC52AFA8E3800A6A9D4 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = E3F92DC42AFA8E3800A6A9D4 /* whisper */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		BE002AC42D2B2D9B0013E89F /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				BE002B1C2D2B44700013E89F /* libggml.dylib in CopyFiles */,
+				BE002B1D2D2B44700013E89F /* libggml-base.dylib in CopyFiles */,
+				BE002B1E2D2B44700013E89F /* libggml-blas.dylib in CopyFiles */,
+				BE002B1F2D2B44700013E89F /* libggml-cpu.dylib in CopyFiles */,
+				BE002B202D2B44700013E89F /* libggml-metal.dylib in CopyFiles */,
+				BE002B212D2B44700013E89F /* libwhisper.dylib in CopyFiles */,
+				BE002B222D2B44700013E89F /* libwhisper.1.dylib in CopyFiles */,
+				BE002B232D2B44700013E89F /* libwhisper.1.7.3.dylib in CopyFiles */,
+				BE002B242D2B44700013E89F /* libwhisper.coreml.dylib in CopyFiles */,
+				BE002AFE2D2B43740013E89F /* libggml.dylib in CopyFiles */,
+				BE002AFF2D2B43740013E89F /* libggml-base.dylib in CopyFiles */,
+				BE002B002D2B43740013E89F /* libggml-blas.dylib in CopyFiles */,
+				BE002B012D2B43740013E89F /* libggml-cpu.dylib in CopyFiles */,
+				BE002B022D2B43740013E89F /* libggml-metal.dylib in CopyFiles */,
+				BE002B032D2B43740013E89F /* libwhisper.dylib in CopyFiles */,
+				BE002B042D2B43740013E89F /* libwhisper.1.dylib in CopyFiles */,
+				BE002B052D2B43740013E89F /* libwhisper.1.7.3.dylib in CopyFiles */,
+				BE002B062D2B43740013E89F /* libwhisper.coreml.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		BE002AEA2D2B43460013E89F /* libggml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libggml.dylib; sourceTree = "<group>"; };
+		BE002AEB2D2B43460013E89F /* libggml-base.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-base.dylib"; sourceTree = "<group>"; };
+		BE002AEC2D2B43460013E89F /* libggml-blas.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-blas.dylib"; sourceTree = "<group>"; };
+		BE002AED2D2B43460013E89F /* libggml-cpu.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-cpu.dylib"; sourceTree = "<group>"; };
+		BE002AEE2D2B43460013E89F /* libggml-metal.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-metal.dylib"; sourceTree = "<group>"; };
+		BE002AEF2D2B43460013E89F /* libwhisper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.dylib; sourceTree = "<group>"; };
+		BE002AF02D2B43460013E89F /* libwhisper.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.1.dylib; sourceTree = "<group>"; };
+		BE002AF12D2B43460013E89F /* libwhisper.1.7.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.1.7.3.dylib; sourceTree = "<group>"; };
+		BE002AF22D2B43460013E89F /* libwhisper.coreml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.coreml.dylib; sourceTree = "<group>"; };
+		BE002B082D2B444E0013E89F /* libggml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libggml.dylib; sourceTree = "<group>"; };
+		BE002B092D2B444E0013E89F /* libggml-base.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-base.dylib"; sourceTree = "<group>"; };
+		BE002B0A2D2B444E0013E89F /* libggml-blas.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-blas.dylib"; sourceTree = "<group>"; };
+		BE002B0B2D2B444E0013E89F /* libggml-cpu.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-cpu.dylib"; sourceTree = "<group>"; };
+		BE002B0C2D2B444E0013E89F /* libggml-metal.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-metal.dylib"; sourceTree = "<group>"; };
+		BE002B0D2D2B444E0013E89F /* libwhisper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.dylib; sourceTree = "<group>"; };
+		BE002B0E2D2B444E0013E89F /* libwhisper.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.1.dylib; sourceTree = "<group>"; };
+		BE002B0F2D2B444E0013E89F /* libwhisper.1.7.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.1.7.3.dylib; sourceTree = "<group>"; };
+		BE002B102D2B444E0013E89F /* libwhisper.coreml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.coreml.dylib; sourceTree = "<group>"; };
 		BE845C452CA0B336001ED824 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		BE845C472CA0B3C4001ED824 /* ConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigView.swift; sourceTree = "<group>"; };
 		BE845C492CA0B3E2001ED824 /* EditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditView.swift; sourceTree = "<group>"; };
-		BE845C4D2CA0B61D001ED824 /* ggml-tiny-encoder.mlmodelc */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "ggml-tiny-encoder.mlmodelc"; sourceTree = "<group>"; };
-		BE845C4E2CA0B61D001ED824 /* ggml-tiny-q8_0.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "ggml-tiny-q8_0.bin"; sourceTree = "<group>"; };
 		BE845C4F2CA0B61D001ED824 /* tiny */ = {isa = PBXFileReference; lastKnownFileType = text; path = tiny; sourceTree = "<group>"; };
 		BE893BD82BDA65A500AC9CB8 /* transcribe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = transcribe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE893BDB2BDA65A500AC9CB8 /* whisperappApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = whisperappApp.swift; sourceTree = "<group>"; };
@@ -57,25 +116,56 @@
 		BE893C2A2BDB2B9000AC9CB8 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		BE893C2E2BDB2C9B00AC9CB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BEB341102CB64D4300DE57A7 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		BECC854F2D20CD5D00B2F082 /* ggml-tiny-encoder.mlmodelc */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "ggml-tiny-encoder.mlmodelc"; sourceTree = "<group>"; };
+		BECC85532D20CE4700B2F082 /* ggml-tiny-q8_0.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "ggml-tiny-q8_0.bin"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		BE893BD52BDA65A500AC9CB8 /* Frameworks */ = {
+		0AAC5D9429539CCF003032C3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE33E4782CAE2B1600CEE96F /* whisper in Frameworks */,
-				BE33E4772CAE2B1600CEE96F /* whisper in Frameworks */,
-				BE33E4762CAE2B1600CEE96F /* whisper in Frameworks */,
-				BEB340EA2CB1A63500DE57A7 /* whisper in Frameworks */,
-				BE33E4752CAE2B1600CEE96F /* whisper in Frameworks */,
-				BE7152AB2CA17CA100A4C69E /* whisper in Frameworks */,
+				E3F92DC52AFA8E3800A6A9D4 /* whisper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BE002AF32D2B43460013E89F /* lib_mac */ = {
+			isa = PBXGroup;
+			children = (
+				BE002AEA2D2B43460013E89F /* libggml.dylib */,
+				BE002AEB2D2B43460013E89F /* libggml-base.dylib */,
+				BE002AEC2D2B43460013E89F /* libggml-blas.dylib */,
+				BE002AED2D2B43460013E89F /* libggml-cpu.dylib */,
+				BE002AEE2D2B43460013E89F /* libggml-metal.dylib */,
+				BE002AEF2D2B43460013E89F /* libwhisper.dylib */,
+				BE002AF02D2B43460013E89F /* libwhisper.1.dylib */,
+				BE002AF12D2B43460013E89F /* libwhisper.1.7.3.dylib */,
+				BE002AF22D2B43460013E89F /* libwhisper.coreml.dylib */,
+			);
+			name = lib_mac;
+			path = whisper.cpp/lib_mac;
+			sourceTree = "<group>";
+		};
+		BE002B112D2B444E0013E89F /* lib_ios */ = {
+			isa = PBXGroup;
+			children = (
+				BE002B082D2B444E0013E89F /* libggml.dylib */,
+				BE002B092D2B444E0013E89F /* libggml-base.dylib */,
+				BE002B0A2D2B444E0013E89F /* libggml-blas.dylib */,
+				BE002B0B2D2B444E0013E89F /* libggml-cpu.dylib */,
+				BE002B0C2D2B444E0013E89F /* libggml-metal.dylib */,
+				BE002B0D2D2B444E0013E89F /* libwhisper.dylib */,
+				BE002B0E2D2B444E0013E89F /* libwhisper.1.dylib */,
+				BE002B0F2D2B444E0013E89F /* libwhisper.1.7.3.dylib */,
+				BE002B102D2B444E0013E89F /* libwhisper.coreml.dylib */,
+			);
+			name = lib_ios;
+			path = whisper.cpp/lib_ios;
+			sourceTree = "<group>";
+		};
 		BE845C4B2CA0B465001ED824 /* Library */ = {
 			isa = PBXGroup;
 			children = (
@@ -90,8 +180,8 @@
 		BE845C4C2CA0B588001ED824 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				BE845C4D2CA0B61D001ED824 /* ggml-tiny-encoder.mlmodelc */,
-				BE845C4E2CA0B61D001ED824 /* ggml-tiny-q8_0.bin */,
+				BECC854F2D20CD5D00B2F082 /* ggml-tiny-encoder.mlmodelc */,
+				BECC85532D20CE4700B2F082 /* ggml-tiny-q8_0.bin */,
 				BE845C4F2CA0B61D001ED824 /* tiny */,
 			);
 			path = Models;
@@ -124,6 +214,8 @@
 		BE893BDA2BDA65A500AC9CB8 /* whisperapp */ = {
 			isa = PBXGroup;
 			children = (
+				BE002B112D2B444E0013E89F /* lib_ios */,
+				BE002AF32D2B43460013E89F /* lib_mac */,
 				BE893C2E2BDB2C9B00AC9CB8 /* Info.plist */,
 				BE845C4B2CA0B465001ED824 /* Library */,
 				BE893C1E2BDAA39200AC9CB8 /* Download */,
@@ -176,8 +268,9 @@
 			buildConfigurationList = BE893BE72BDA65A600AC9CB8 /* Build configuration list for PBXNativeTarget "transcribe" */;
 			buildPhases = (
 				BE893BD42BDA65A500AC9CB8 /* Sources */,
-				BE893BD52BDA65A500AC9CB8 /* Frameworks */,
+				0AAC5D9429539CCF003032C3 /* Frameworks */,
 				BE893BD62BDA65A500AC9CB8 /* Resources */,
+				BE002AC42D2B2D9B0013E89F /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -185,12 +278,7 @@
 			);
 			name = transcribe;
 			packageProductDependencies = (
-				BE893C1C2BDA803A00AC9CB8 /* whisper */,
-				BE845C772CA0CC91001ED824 /* whisper */,
-				BE845C7B2CA0CE5E001ED824 /* whisper */,
-				BE845C7E2CA0D04A001ED824 /* whisper */,
-				BE7152AA2CA17CA100A4C69E /* whisper */,
-				BEB340E92CB1A63500DE57A7 /* whisper */,
+				E3F92DC42AFA8E3800A6A9D4 /* whisper */,
 			);
 			productName = whisperapp;
 			productReference = BE893BD82BDA65A500AC9CB8 /* transcribe.app */;
@@ -212,7 +300,6 @@
 				};
 			};
 			buildConfigurationList = BE893BD32BDA65A500AC9CB8 /* Build configuration list for PBXProject "transcribe" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -222,8 +309,9 @@
 			);
 			mainGroup = BE893BCF2BDA65A500AC9CB8;
 			packageReferences = (
-				BEB340E82CB1A63500DE57A7 /* XCLocalSwiftPackageReference "whisper" */,
+				BE3E9E192D2B1A290064FDD3 /* XCLocalSwiftPackageReference "whisperapp/whisper.cpp" */,
 			);
+			preferredProjectObjectVersion = 77;
 			productRefGroup = BE893BD92BDA65A500AC9CB8 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -240,11 +328,11 @@
 			files = (
 				BE893C2B2BDB2B9000AC9CB8 /* InfoPlist.xcstrings in Resources */,
 				BE893BE42BDA65A600AC9CB8 /* Preview Assets.xcassets in Resources */,
-				BE845C502CA0B61D001ED824 /* ggml-tiny-q8_0.bin in Resources */,
-				BE845C512CA0B61D001ED824 /* ggml-tiny-encoder.mlmodelc in Resources */,
+				BECC85522D20CD5D00B2F082 /* ggml-tiny-encoder.mlmodelc in Resources */,
 				BE845C522CA0B61D001ED824 /* tiny in Resources */,
 				BE893BE02BDA65A600AC9CB8 /* Assets.xcassets in Resources */,
 				BE893C232BDAB6BB00AC9CB8 /* Localizable.xcstrings in Resources */,
+				BECC85542D20CE4700B2F082 /* ggml-tiny-q8_0.bin in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -398,13 +486,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 93;
+				CURRENT_PROJECT_VERSION = 94;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = whisperapp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Transcribe;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
@@ -423,8 +512,14 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib",
+					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib_mac",
+					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib_ios",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = info.lithium03.whisperapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = NO;
@@ -444,13 +539,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 93;
+				CURRENT_PROJECT_VERSION = 94;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = whisperapp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Transcribe;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
@@ -469,8 +565,14 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib",
+					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib_mac",
+					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib_ios",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = info.lithium03.whisperapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = NO;
@@ -507,34 +609,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BEB340E82CB1A63500DE57A7 /* XCLocalSwiftPackageReference "whisper" */ = {
+		BE3E9E192D2B1A290064FDD3 /* XCLocalSwiftPackageReference "whisperapp/whisper.cpp" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = whisper;
+			relativePath = whisperapp/whisper.cpp;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BE7152AA2CA17CA100A4C69E /* whisper */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = whisper;
-		};
-		BE845C772CA0CC91001ED824 /* whisper */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = whisper;
-		};
-		BE845C7B2CA0CE5E001ED824 /* whisper */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = whisper;
-		};
-		BE845C7E2CA0D04A001ED824 /* whisper */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = whisper;
-		};
-		BE893C1C2BDA803A00AC9CB8 /* whisper */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = whisper;
-		};
-		BEB340E92CB1A63500DE57A7 /* whisper */ = {
+		E3F92DC42AFA8E3800A6A9D4 /* whisper */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = whisper;
 		};
