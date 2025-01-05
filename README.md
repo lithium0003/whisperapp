@@ -33,5 +33,8 @@ Converted models are placed in some web to download from app.
 
 Store app uses the weight https://huggingface.co/lithium0003/ggml-coreml-whisper
 
+## whisper.cpp build
+run ```./build.sh```
+
 ## App compile
 Open ```whisperapp.xcodeproj``` with Xcode and run.
