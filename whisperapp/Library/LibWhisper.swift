@@ -204,7 +204,7 @@ actor WhisperContext {
             }
         }
 
-        if shift <= 0, count - samples.count > 16000 * 30 || (samples.isEmpty && count > 16000 * 28) {
+        if shift <= 0, count - samples.count > 16000 * 30 || (samples.isEmpty && count > 16000 * 29) {
             let shift = samples.isEmpty ? 16000 * 15 : min(samples.count, 16000 * 15)
             print("shift", shift, count, backWav.count, backPoint)
             if shift > 0 {
@@ -227,7 +227,7 @@ actor WhisperContext {
             return result
         }
 
-        let padlen = 16000 * 28 - backWav.count
+        let padlen = 16000 * 29 - backWav.count
         if padlen > 0 {
             if samples.isEmpty {
                 backWav += [Float](repeating: 0, count: padlen)
@@ -238,10 +238,10 @@ actor WhisperContext {
             }
         }
 
-        let t_end = 2800
-        let input_samples = Array(backWav[0..<16000*28]) + [Float](repeating: 0, count: 16000 * 2)
+        let t_end = 2900
+        let input_samples = Array(backWav[0..<16000*29]) + [Float](repeating: 0, count: 16000 * 2)
 
-        let maxThreads = max(1, min(4, cpuCount()))
+        let maxThreads = max(1, min(8, cpuCount()))
         print("Selecting \(maxThreads) threads")
         var params = whisper_full_default_params(WHISPER_SAMPLING_BEAM_SEARCH)
         fixlang.withCString { lang in
@@ -497,7 +497,7 @@ actor WhisperContext {
             processPoint = lastStop
         }
 
-        if samples.isEmpty, count <= 16000 * 28 {
+        if samples.isEmpty, count <= 16000 * 29 {
             backPoint += count
             backWav.removeAll()
         }

@@ -7,24 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BE002AFE2D2B43740013E89F /* libggml.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEA2D2B43460013E89F /* libggml.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002AFF2D2B43740013E89F /* libggml-base.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEB2D2B43460013E89F /* libggml-base.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B002D2B43740013E89F /* libggml-blas.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEC2D2B43460013E89F /* libggml-blas.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B012D2B43740013E89F /* libggml-cpu.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AED2D2B43460013E89F /* libggml-cpu.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B022D2B43740013E89F /* libggml-metal.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEE2D2B43460013E89F /* libggml-metal.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B032D2B43740013E89F /* libwhisper.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AEF2D2B43460013E89F /* libwhisper.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B042D2B43740013E89F /* libwhisper.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AF02D2B43460013E89F /* libwhisper.1.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B052D2B43740013E89F /* libwhisper.1.7.3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AF12D2B43460013E89F /* libwhisper.1.7.3.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B062D2B43740013E89F /* libwhisper.coreml.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002AF22D2B43460013E89F /* libwhisper.coreml.dylib */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B1C2D2B44700013E89F /* libggml.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B082D2B444E0013E89F /* libggml.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B1D2D2B44700013E89F /* libggml-base.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B092D2B444E0013E89F /* libggml-base.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B1E2D2B44700013E89F /* libggml-blas.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0A2D2B444E0013E89F /* libggml-blas.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B1F2D2B44700013E89F /* libggml-cpu.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0B2D2B444E0013E89F /* libggml-cpu.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B202D2B44700013E89F /* libggml-metal.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0C2D2B444E0013E89F /* libggml-metal.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B212D2B44700013E89F /* libwhisper.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0D2D2B444E0013E89F /* libwhisper.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B222D2B44700013E89F /* libwhisper.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0E2D2B444E0013E89F /* libwhisper.1.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B232D2B44700013E89F /* libwhisper.1.7.3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B0F2D2B444E0013E89F /* libwhisper.1.7.3.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		BE002B242D2B44700013E89F /* libwhisper.coreml.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE002B102D2B444E0013E89F /* libwhisper.coreml.dylib */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BE093CBE2D32D78100CAFA86 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = BE093CBD2D32D78100CAFA86 /* whisper */; };
+		BE093CC12D32DB1F00CAFA86 /* CoreML.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE093CBF2D32D9E500CAFA86 /* CoreML.framework */; };
 		BE845C462CA0B336001ED824 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE845C452CA0B336001ED824 /* RootView.swift */; };
 		BE845C482CA0B3C4001ED824 /* ConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE845C472CA0B3C4001ED824 /* ConfigView.swift */; };
 		BE845C4A2CA0B3E2001ED824 /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE845C492CA0B3E2001ED824 /* EditView.swift */; };
@@ -44,58 +28,23 @@
 		BEB341112CB64D4300DE57A7 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEB341102CB64D4300DE57A7 /* Player.swift */; };
 		BECC85522D20CD5D00B2F082 /* ggml-tiny-encoder.mlmodelc in Resources */ = {isa = PBXBuildFile; fileRef = BECC854F2D20CD5D00B2F082 /* ggml-tiny-encoder.mlmodelc */; };
 		BECC85542D20CE4700B2F082 /* ggml-tiny-q8_0.bin in Resources */ = {isa = PBXBuildFile; fileRef = BECC85532D20CE4700B2F082 /* ggml-tiny-q8_0.bin */; };
-		E3F92DC52AFA8E3800A6A9D4 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = E3F92DC42AFA8E3800A6A9D4 /* whisper */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		BE002AC42D2B2D9B0013E89F /* CopyFiles */ = {
+		BE671D162D32403E00C9FC1E /* Embed Libraries */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				BE002B1C2D2B44700013E89F /* libggml.dylib in CopyFiles */,
-				BE002B1D2D2B44700013E89F /* libggml-base.dylib in CopyFiles */,
-				BE002B1E2D2B44700013E89F /* libggml-blas.dylib in CopyFiles */,
-				BE002B1F2D2B44700013E89F /* libggml-cpu.dylib in CopyFiles */,
-				BE002B202D2B44700013E89F /* libggml-metal.dylib in CopyFiles */,
-				BE002B212D2B44700013E89F /* libwhisper.dylib in CopyFiles */,
-				BE002B222D2B44700013E89F /* libwhisper.1.dylib in CopyFiles */,
-				BE002B232D2B44700013E89F /* libwhisper.1.7.3.dylib in CopyFiles */,
-				BE002B242D2B44700013E89F /* libwhisper.coreml.dylib in CopyFiles */,
-				BE002AFE2D2B43740013E89F /* libggml.dylib in CopyFiles */,
-				BE002AFF2D2B43740013E89F /* libggml-base.dylib in CopyFiles */,
-				BE002B002D2B43740013E89F /* libggml-blas.dylib in CopyFiles */,
-				BE002B012D2B43740013E89F /* libggml-cpu.dylib in CopyFiles */,
-				BE002B022D2B43740013E89F /* libggml-metal.dylib in CopyFiles */,
-				BE002B032D2B43740013E89F /* libwhisper.dylib in CopyFiles */,
-				BE002B042D2B43740013E89F /* libwhisper.1.dylib in CopyFiles */,
-				BE002B052D2B43740013E89F /* libwhisper.1.7.3.dylib in CopyFiles */,
-				BE002B062D2B43740013E89F /* libwhisper.coreml.dylib in CopyFiles */,
 			);
+			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		BE002AEA2D2B43460013E89F /* libggml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libggml.dylib; sourceTree = "<group>"; };
-		BE002AEB2D2B43460013E89F /* libggml-base.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-base.dylib"; sourceTree = "<group>"; };
-		BE002AEC2D2B43460013E89F /* libggml-blas.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-blas.dylib"; sourceTree = "<group>"; };
-		BE002AED2D2B43460013E89F /* libggml-cpu.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-cpu.dylib"; sourceTree = "<group>"; };
-		BE002AEE2D2B43460013E89F /* libggml-metal.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-metal.dylib"; sourceTree = "<group>"; };
-		BE002AEF2D2B43460013E89F /* libwhisper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.dylib; sourceTree = "<group>"; };
-		BE002AF02D2B43460013E89F /* libwhisper.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.1.dylib; sourceTree = "<group>"; };
-		BE002AF12D2B43460013E89F /* libwhisper.1.7.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.1.7.3.dylib; sourceTree = "<group>"; };
-		BE002AF22D2B43460013E89F /* libwhisper.coreml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.coreml.dylib; sourceTree = "<group>"; };
-		BE002B082D2B444E0013E89F /* libggml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libggml.dylib; sourceTree = "<group>"; };
-		BE002B092D2B444E0013E89F /* libggml-base.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-base.dylib"; sourceTree = "<group>"; };
-		BE002B0A2D2B444E0013E89F /* libggml-blas.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-blas.dylib"; sourceTree = "<group>"; };
-		BE002B0B2D2B444E0013E89F /* libggml-cpu.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-cpu.dylib"; sourceTree = "<group>"; };
-		BE002B0C2D2B444E0013E89F /* libggml-metal.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libggml-metal.dylib"; sourceTree = "<group>"; };
-		BE002B0D2D2B444E0013E89F /* libwhisper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.dylib; sourceTree = "<group>"; };
-		BE002B0E2D2B444E0013E89F /* libwhisper.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.1.dylib; sourceTree = "<group>"; };
-		BE002B0F2D2B444E0013E89F /* libwhisper.1.7.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.1.7.3.dylib; sourceTree = "<group>"; };
-		BE002B102D2B444E0013E89F /* libwhisper.coreml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libwhisper.coreml.dylib; sourceTree = "<group>"; };
+		BE093CBF2D32D9E500CAFA86 /* CoreML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreML.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.2.sdk/System/Library/Frameworks/CoreML.framework; sourceTree = DEVELOPER_DIR; };
 		BE845C452CA0B336001ED824 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		BE845C472CA0B3C4001ED824 /* ConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigView.swift; sourceTree = "<group>"; };
 		BE845C492CA0B3E2001ED824 /* EditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditView.swift; sourceTree = "<group>"; };
@@ -121,51 +70,18 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		0AAC5D9429539CCF003032C3 /* Frameworks */ = {
+		BE671CFD2D32326900C9FC1E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3F92DC52AFA8E3800A6A9D4 /* whisper in Frameworks */,
+				BE093CC12D32DB1F00CAFA86 /* CoreML.framework in Frameworks */,
+				BE093CBE2D32D78100CAFA86 /* whisper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		BE002AF32D2B43460013E89F /* lib_mac */ = {
-			isa = PBXGroup;
-			children = (
-				BE002AEA2D2B43460013E89F /* libggml.dylib */,
-				BE002AEB2D2B43460013E89F /* libggml-base.dylib */,
-				BE002AEC2D2B43460013E89F /* libggml-blas.dylib */,
-				BE002AED2D2B43460013E89F /* libggml-cpu.dylib */,
-				BE002AEE2D2B43460013E89F /* libggml-metal.dylib */,
-				BE002AEF2D2B43460013E89F /* libwhisper.dylib */,
-				BE002AF02D2B43460013E89F /* libwhisper.1.dylib */,
-				BE002AF12D2B43460013E89F /* libwhisper.1.7.3.dylib */,
-				BE002AF22D2B43460013E89F /* libwhisper.coreml.dylib */,
-			);
-			name = lib_mac;
-			path = whisper.cpp/lib_mac;
-			sourceTree = "<group>";
-		};
-		BE002B112D2B444E0013E89F /* lib_ios */ = {
-			isa = PBXGroup;
-			children = (
-				BE002B082D2B444E0013E89F /* libggml.dylib */,
-				BE002B092D2B444E0013E89F /* libggml-base.dylib */,
-				BE002B0A2D2B444E0013E89F /* libggml-blas.dylib */,
-				BE002B0B2D2B444E0013E89F /* libggml-cpu.dylib */,
-				BE002B0C2D2B444E0013E89F /* libggml-metal.dylib */,
-				BE002B0D2D2B444E0013E89F /* libwhisper.dylib */,
-				BE002B0E2D2B444E0013E89F /* libwhisper.1.dylib */,
-				BE002B0F2D2B444E0013E89F /* libwhisper.1.7.3.dylib */,
-				BE002B102D2B444E0013E89F /* libwhisper.coreml.dylib */,
-			);
-			name = lib_ios;
-			path = whisper.cpp/lib_ios;
-			sourceTree = "<group>";
-		};
 		BE845C4B2CA0B465001ED824 /* Library */ = {
 			isa = PBXGroup;
 			children = (
@@ -190,6 +106,7 @@
 		BE845C5D2CA0C75C001ED824 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BE093CBF2D32D9E500CAFA86 /* CoreML.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -214,8 +131,6 @@
 		BE893BDA2BDA65A500AC9CB8 /* whisperapp */ = {
 			isa = PBXGroup;
 			children = (
-				BE002B112D2B444E0013E89F /* lib_ios */,
-				BE002AF32D2B43460013E89F /* lib_mac */,
 				BE893C2E2BDB2C9B00AC9CB8 /* Info.plist */,
 				BE845C4B2CA0B465001ED824 /* Library */,
 				BE893C1E2BDAA39200AC9CB8 /* Download */,
@@ -268,9 +183,9 @@
 			buildConfigurationList = BE893BE72BDA65A600AC9CB8 /* Build configuration list for PBXNativeTarget "transcribe" */;
 			buildPhases = (
 				BE893BD42BDA65A500AC9CB8 /* Sources */,
-				0AAC5D9429539CCF003032C3 /* Frameworks */,
 				BE893BD62BDA65A500AC9CB8 /* Resources */,
-				BE002AC42D2B2D9B0013E89F /* CopyFiles */,
+				BE671CFD2D32326900C9FC1E /* Frameworks */,
+				BE671D162D32403E00C9FC1E /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -278,7 +193,7 @@
 			);
 			name = transcribe;
 			packageProductDependencies = (
-				E3F92DC42AFA8E3800A6A9D4 /* whisper */,
+				BE093CBD2D32D78100CAFA86 /* whisper */,
 			);
 			productName = whisperapp;
 			productReference = BE893BD82BDA65A500AC9CB8 /* transcribe.app */;
@@ -296,6 +211,7 @@
 				TargetAttributes = {
 					BE893BD72BDA65A500AC9CB8 = {
 						CreatedOnToolsVersion = 15.3;
+						LastSwiftMigration = 1620;
 					};
 				};
 			};
@@ -309,7 +225,7 @@
 			);
 			mainGroup = BE893BCF2BDA65A500AC9CB8;
 			packageReferences = (
-				BE3E9E192D2B1A290064FDD3 /* XCLocalSwiftPackageReference "whisperapp/whisper.cpp" */,
+				BE671E412D3268A000C9FC1E /* XCLocalSwiftPackageReference "whisper" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BE893BD92BDA65A500AC9CB8 /* Products */;
@@ -484,14 +400,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 96;
 				DEAD_CODE_STRIPPING = YES;
+				DEFINES_MODULE = NO;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = whisperapp/Info.plist;
@@ -509,17 +428,13 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib",
-					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib_mac",
-					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib_ios",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				LIBRARY_SEARCH_PATHS = "";
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 2.3;
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = info.lithium03.whisperapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = NO;
@@ -527,6 +442,8 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -537,14 +454,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = whisperapp/whisperapp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 96;
 				DEAD_CODE_STRIPPING = YES;
+				DEFINES_MODULE = NO;
 				DEVELOPMENT_ASSET_PATHS = "\"whisperapp/Preview Content\"";
 				DEVELOPMENT_TEAM = 7A9X38B4YU;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = whisperapp/Info.plist;
@@ -562,17 +482,13 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib",
-					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib_mac",
-					"$(PROJECT_DIR)/whisperapp/whisper.cpp/lib_ios",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				LIBRARY_SEARCH_PATHS = "";
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 2.3;
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = info.lithium03.whisperapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = NO;
@@ -580,6 +496,7 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -609,15 +526,16 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BE3E9E192D2B1A290064FDD3 /* XCLocalSwiftPackageReference "whisperapp/whisper.cpp" */ = {
+		BE671E412D3268A000C9FC1E /* XCLocalSwiftPackageReference "whisper" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = whisperapp/whisper.cpp;
+			relativePath = whisper;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E3F92DC42AFA8E3800A6A9D4 /* whisper */ = {
+		BE093CBD2D32D78100CAFA86 /* whisper */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = BE671E412D3268A000C9FC1E /* XCLocalSwiftPackageReference "whisper" */;
 			productName = whisper;
 		};
 /* End XCSwiftPackageProductDependency section */

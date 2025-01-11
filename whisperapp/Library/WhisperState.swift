@@ -25,15 +25,16 @@ class WhisperState: NSObject, ObservableObject {
         let message: String
         let prob: [Double]
         let timing: Double?
+        let duration: Double?
     }
     private(set) var messageLog: [MessageLog] = []
 
     func appendMessage(_ message: String) {
-        messageLog.append(.init(message: message, prob: [], timing: nil))
+        messageLog.append(.init(message: message, prob: [], timing: nil, duration: nil))
     }
 
     func appendMessage<S, T: Sequence>(contentsOf: T) where S: StringProtocol, T.Element == S {
-        messageLog.append(contentsOf: contentsOf.map({ .init(message: String($0), prob: [], timing: nil) }))
+        messageLog.append(contentsOf: contentsOf.map({ .init(message: String($0), prob: [], timing: nil, duration: nil) }))
     }
 
     var active = false
@@ -482,7 +483,7 @@ class WhisperState: NSObject, ObservableObject {
             await buffer.done_processing(sample_count: samples.count)
             parent.internalWaitTime = await Double(whisperContext.waitTime) / 16000
             if !txt.isEmpty {
-                let v = txt.sorted(by: { $0.time.start < $1.time.start }).map({ MessageLog(message: $0.text, prob: $0.probability, timing: Double($0.time.start) / 16000) })
+                let v = txt.sorted(by: { $0.time.start < $1.time.start }).map({ MessageLog(message: $0.text, prob: $0.probability, timing: Double($0.time.start) / 16000, duration: Double($0.time.stop - $0.time.start) / 16000) })
                 parent.messageLog = v
             }
         }

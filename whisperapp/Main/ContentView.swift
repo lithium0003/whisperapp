@@ -652,6 +652,17 @@ struct ContentView: View {
         }
     }
 
+    func convert_srt(message: [WhisperState.MessageLog]) -> String {
+        let format = Duration.TimeFormatStyle(pattern: .hourMinuteSecond(padHourToLength: 2, fractionalSecondsLength: 3))
+        return message.enumerated().map({
+            "\($0.offset + 1)\n" +
+            Duration.milliseconds(($0.element.timing ?? 0) * 1000).formatted(format).replacingOccurrences(of: ".", with: ",") +
+            " --> " +
+            Duration.milliseconds((($0.element.timing ?? 0) + ($0.element.duration ?? 0)) * 1000).formatted(format).replacingOccurrences(of: ".", with: ",") +
+            "\n" + $0.element.message + "\n"
+        }).joined(separator: "\n")
+    }
+    
     var body: some View {
         VStack {
             if whisperState.isModelLoaded {
@@ -666,7 +677,7 @@ struct ContentView: View {
                 if isRecording {
                     return
                 }
-                let resultText = whisperState.messageLog.map({ $0.message }).joined(separator: "\n")
+                let resultText = convert_srt(message: whisperState.messageLog)
                 userData.presentedPage.append(.edit(text: resultText))
             }
             if whisperState.isModelLoaded {

@@ -1139,6 +1139,16 @@
         }
       }
     },
+    "Save" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
+          }
+        }
+      }
+    },
     "Segment probability cutoff" : {
       "localizations" : {
         "ja" : {
@@ -1433,6 +1443,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "チベット語"
+          }
+        }
+      }
+    },
+    "to Plain Text" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時刻を消す"
           }
         }
       }

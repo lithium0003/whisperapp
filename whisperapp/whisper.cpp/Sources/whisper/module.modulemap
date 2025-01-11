@@ -1,5 +1,7 @@
-module whisper {
+module whisper [system] {
     header "include/whisper.h"
+    link "ggml"
+    link "ggml-base"
     link "whisper"
     export *
 }
