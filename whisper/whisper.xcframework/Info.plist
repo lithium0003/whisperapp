@@ -18,12 +18,13 @@
 		</dict>
 		<dict>
 			<key>LibraryIdentifier</key>
-			<string>mac-arm64</string>
+			<string>mac</string>
 			<key>LibraryPath</key>
 			<string>whisper.a</string>
 			<key>SupportedArchitectures</key>
 			<array>
 				<string>arm64</string>
+				<string>x86_64</string>
 			</array>
 			<key>SupportedPlatform</key>
 			<string>macos</string>

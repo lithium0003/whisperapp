@@ -38,9 +38,34 @@ cmake -G Xcode .. \
 	-DWHISPER_BUILD_SERVER=OFF \
 	-DWHISPER_COREML=ON \
 	-DGGML_STATIC=ON \
-	-DBUILD_SHARED_LIBS=OFF 
+	-DBUILD_SHARED_LIBS=OFF \
+	-DCMAKE_OSX_ARCHITECTURES="arm64" 
 
 cmake --build . --config Release -j $(sysctl -n hw.logicalcpu) -- CODE_SIGNING_ALLOWED=NO
 )
-find whisper.cpp/build -name '*.a' | xargs libtool -static -o whisper/whisper.xcframework/mac-arm64/whisper.a
+find whisper.cpp/build -name '*.a' | xargs libtool -static -o whisper/whisper.xcframework/mac/arm64-whisper.a
 rm -rf whisper.cpp/build
+(
+cd whisper.cpp
+rm -rf build && mkdir build && cd build
+
+cmake -G Xcode .. \
+	-DGGML_METAL_USE_BF16=ON \
+	-DGGML_METAL_EMBED_LIBRARY=ON \
+	-DWHISPER_BUILD_EXAMPLES=OFF \
+	-DWHISPER_BUILD_TESTS=OFF \
+	-DWHISPER_BUILD_SERVER=OFF \
+	-DWHISPER_COREML=ON \
+	-DGGML_STATIC=ON \
+	-DBUILD_SHARED_LIBS=OFF \
+	-DGGML_NATIVE=OFF \
+	-DCMAKE_OSX_ARCHITECTURES="x86_64" 
+
+cmake --build . --config Release -j $(sysctl -n hw.logicalcpu) -- CODE_SIGNING_ALLOWED=NO
+)
+find whisper.cpp/build -name '*.a' | xargs libtool -static -o whisper/whisper.xcframework/mac/x86_64-whisper.a
+rm -rf whisper.cpp/build
+
+lipo -create whisper/whisper.xcframework/mac/arm64-whisper.a whisper/whisper.xcframework/mac/x86_64-whisper.a -output whisper/whisper.xcframework/mac/whisper.a
+rm -rf whisper/whisper.xcframework/mac/arm64-whisper.a
+rm -rf whisper/whisper.xcframework/mac/x86_64-whisper.a
